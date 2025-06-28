@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import JournalEntry from '../types/JournalEntry';
 import JournalEntryComponent from '../components/JournalEntryComponent';
-import { supabase } from '../supabase';
+import { supabase } from '../lib/supabase';
 
 const Journal = () => {
   const [entries, setEntries] = useState<JournalEntry[]>([]);
