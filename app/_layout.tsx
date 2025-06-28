@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
@@ -23,18 +23,30 @@ export default function RootLayout() {
   });
 
   const [appIsReady, setAppIsReady] = useState(false);
+  const mounted = useRef(true);
+
+  // Track component mount status
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
 
   useEffect(() => {
     async function prepare() {
       try {
-        // Keep splash screen visible while we fetch resources
+        // Ensure splash screen stays visible
         await SplashScreen.preventAutoHideAsync();
         // Artificial delay for splash screen
         await new Promise(resolve => setTimeout(resolve, 2000));
       } catch (e) {
         console.warn(e);
       } finally {
-        setAppIsReady(true);
+        // Only update state if component is still mounted
+        if (mounted.current) {
+          setAppIsReady(true);
+        }
       }
     }
 
