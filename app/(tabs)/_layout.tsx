@@ -1,7 +1,7 @@
 import React from 'react';
 import { Tabs } from 'expo-router';
 import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
-import { Home, Heart, MessageCircle, User, Book, BarChart3 } from 'lucide-react-native';
+import { Chrome as Home, Heart, MessageCircle, User, Book, ChartBar as BarChart3 } from 'lucide-react-native';
 import { Colors, Typography, Spacing, Shadow } from '@/constants/theme';
 import { BlurView } from 'expo-blur';
 
