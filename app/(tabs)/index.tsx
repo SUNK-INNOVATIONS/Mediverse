@@ -179,7 +179,7 @@ export default function HomeScreen() {
                     </LinearGradient>
                     <Text style={styles.quickActionText}>{action.title}</Text>
                   </TouchableOpacity>
-                </TouchableOpacity>
+                </AnimatedCard>
               ))}
             </View>
           </View>
