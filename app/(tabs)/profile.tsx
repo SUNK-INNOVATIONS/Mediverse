@@ -12,22 +12,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { 
-  User, 
-  Settings, 
-  Bell, 
-  Shield, 
-  CircleHelp as HelpCircle, 
-  Info, 
-  LogOut, 
-  ChevronRight, 
-  Award, 
-  TrendingUp, 
-  Calendar,
-  Edit3,
-  Save,
-  X
-} from 'lucide-react-native';
+import { User, Settings, Bell, Shield, CircleHelp as HelpCircle, Info, LogOut, ChevronRight, Award, TrendingUp, Calendar, CreditCard as Edit3, Save, X } from 'lucide-react-native';
 import { Colors, Typography, Spacing, BorderRadius, Shadow } from '@/constants/theme';
 import { useAuth } from '@/hooks/useAuth';
 import { useMoodData } from '@/hooks/useMoodData';

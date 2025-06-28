@@ -12,17 +12,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { 
-  Plus, 
-  BookOpen, 
-  Calendar, 
-  Heart, 
-  Edit3, 
-  Trash2, 
-  Save,
-  X,
-  Search
-} from 'lucide-react-native';
+import { Plus, BookOpen, Calendar, Heart, CreditCard as Edit3, Trash2, Save, X, Search } from 'lucide-react-native';
 import { Colors, Typography, Spacing, BorderRadius, Shadow } from '@/constants/theme';
 import { useAuth } from '@/hooks/useAuth';
 import { useJournalData } from '@/hooks/useJournalData';
