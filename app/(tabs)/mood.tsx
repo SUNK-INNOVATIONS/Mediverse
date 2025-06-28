@@ -7,6 +7,7 @@ import {
   Dimensions,
   Image,
   FlatList,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -22,7 +23,8 @@ import Animated, {
 import { Colors, Typography, Spacing, BorderRadius, Shadow } from '@/constants/theme';
 
 const { width } = Dimensions.get('window');
-const ITEM_WIDTH = width * 0.7;
+const isSmallScreen = width < 375;
+const ITEM_WIDTH = width * (isSmallScreen ? 0.8 : 0.7);
 const ITEM_SPACING = Spacing.lg;
 
 const emotions = [
@@ -112,7 +114,11 @@ export default function MoodTrackerScreen() {
       <SafeAreaView style={styles.safeArea}>
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.headerButton}>
+          <TouchableOpacity 
+            onPress={() => router.back()} 
+            style={styles.headerButton}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
             <ArrowLeft size={24} color={Colors.black} />
           </TouchableOpacity>
           
@@ -123,7 +129,11 @@ export default function MoodTrackerScreen() {
             <Text style={styles.progressText}>Step 1 of 4</Text>
           </View>
           
-          <TouchableOpacity onPress={() => router.back()} style={styles.headerButton}>
+          <TouchableOpacity 
+            onPress={() => router.back()} 
+            style={styles.headerButton}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
             <X size={24} color={Colors.gray600} />
           </TouchableOpacity>
         </View>
@@ -149,6 +159,7 @@ export default function MoodTrackerScreen() {
               snapToInterval={ITEM_WIDTH + ITEM_SPACING}
               decelerationRate="fast"
               contentContainerStyle={styles.carouselContent}
+              scrollEventThrottle={16}
               onMomentumScrollEnd={(e) => {
                 const offset = e.nativeEvent.contentOffset.x;
                 const index = Math.round(offset / (ITEM_WIDTH + ITEM_SPACING));
@@ -176,6 +187,8 @@ export default function MoodTrackerScreen() {
                 minimumTrackTintColor={selectedEmotion?.color || Colors.purple}
                 maximumTrackTintColor={Colors.gray300}
                 thumbTintColor={selectedEmotion?.color || Colors.purple}
+                thumbStyle={styles.sliderThumb}
+                trackStyle={styles.sliderTrack}
               />
               
               <View style={styles.sliderLabels}>
@@ -246,6 +259,7 @@ const styles = StyleSheet.create({
   progressText: {
     ...Typography.caption,
     color: Colors.gray600,
+    fontSize: isSmallScreen ? 10 : 11,
   },
   content: {
     flex: 1,
@@ -253,22 +267,25 @@ const styles = StyleSheet.create({
   },
   titleSection: {
     alignItems: 'center',
-    marginBottom: Spacing.huge,
+    marginBottom: isSmallScreen ? Spacing.xl : Spacing.huge,
+    paddingHorizontal: Spacing.md,
   },
   title: {
     ...Typography.title,
     color: Colors.black,
     textAlign: 'center',
     marginBottom: Spacing.sm,
+    fontSize: isSmallScreen ? 28 : 32,
   },
   subtitle: {
     ...Typography.secondary,
     color: Colors.gray600,
     textAlign: 'center',
     lineHeight: 20,
+    fontSize: isSmallScreen ? 13 : 14,
   },
   carouselContainer: {
-    marginBottom: Spacing.huge,
+    marginBottom: isSmallScreen ? Spacing.xl : Spacing.huge,
   },
   carouselContent: {
     paddingHorizontal: (width - ITEM_WIDTH) / 2,
@@ -277,60 +294,75 @@ const styles = StyleSheet.create({
     marginHorizontal: ITEM_SPACING / 2,
   },
   emotionGradient: {
-    padding: Spacing.xl,
+    padding: isSmallScreen ? Spacing.lg : Spacing.xl,
     borderRadius: BorderRadius.xl,
     alignItems: 'center',
     backgroundColor: Colors.white,
     ...Shadow.medium,
+    minHeight: isSmallScreen ? 200 : 240,
+    justifyContent: 'center',
   },
   emotionImageContainer: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: isSmallScreen ? 80 : 100,
+    height: isSmallScreen ? 80 : 100,
+    borderRadius: isSmallScreen ? 40 : 50,
     backgroundColor: Colors.gray50,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: Spacing.lg,
   },
   emotionImage: {
-    width: 80,
-    height: 80,
+    width: isSmallScreen ? 60 : 80,
+    height: isSmallScreen ? 60 : 80,
     resizeMode: 'contain',
   },
   emotionLabel: {
     ...Typography.heading,
     color: Colors.black,
     marginBottom: Spacing.sm,
+    fontSize: isSmallScreen ? 18 : 20,
   },
   emotionDescription: {
     ...Typography.small,
     color: Colors.gray600,
     textAlign: 'center',
+    fontSize: isSmallScreen ? 11 : 12,
+    lineHeight: isSmallScreen ? 16 : 18,
   },
   intensitySection: {
-    marginBottom: Spacing.huge,
+    marginBottom: isSmallScreen ? Spacing.xl : Spacing.huge,
   },
   intensityTitle: {
     ...Typography.heading,
     color: Colors.black,
     textAlign: 'center',
     marginBottom: Spacing.sm,
+    fontSize: isSmallScreen ? 18 : 20,
   },
   intensitySubtitle: {
     ...Typography.secondary,
     color: Colors.gray600,
     textAlign: 'center',
     marginBottom: Spacing.xl,
+    fontSize: isSmallScreen ? 13 : 14,
   },
   sliderContainer: {
     backgroundColor: Colors.white,
-    padding: Spacing.xl,
+    padding: isSmallScreen ? Spacing.lg : Spacing.xl,
     borderRadius: BorderRadius.lg,
     ...Shadow.small,
   },
   slider: {
     width: '100%',
-    height: 40,
+    height: Platform.OS === 'ios' ? 40 : 50,
+  },
+  sliderThumb: {
+    width: Platform.OS === 'android' ? 20 : undefined,
+    height: Platform.OS === 'android' ? 20 : undefined,
+  },
+  sliderTrack: {
+    height: Platform.OS === 'android' ? 6 : undefined,
+    borderRadius: Platform.OS === 'android' ? 3 : undefined,
   },
   sliderLabels: {
     flexDirection: 'row',
@@ -341,23 +373,27 @@ const styles = StyleSheet.create({
   sliderLabel: {
     ...Typography.small,
     color: Colors.gray600,
+    fontSize: isSmallScreen ? 11 : 12,
   },
   intensityValue: {
     ...Typography.paragraph,
     fontFamily: 'Inter-Bold',
+    fontSize: isSmallScreen ? 15 : 16,
   },
   continueButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: Spacing.lg,
+    paddingVertical: isSmallScreen ? Spacing.md : Spacing.lg,
     borderRadius: BorderRadius.lg,
     ...Shadow.medium,
     gap: Spacing.sm,
+    minHeight: 50, // Minimum touch target
   },
   continueButtonText: {
     ...Typography.paragraph,
     color: Colors.white,
     fontFamily: 'Inter-Bold',
+    fontSize: isSmallScreen ? 15 : 16,
   },
 });

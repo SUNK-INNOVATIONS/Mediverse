@@ -1,3 +1,8 @@
+import { Dimensions } from 'react-native';
+
+const { width } = Dimensions.get('window');
+const isSmallScreen = width < 375;
+
 export const Colors = {
   // Primary Colors
   white: '#FFFFFF',
@@ -37,46 +42,46 @@ export const Colors = {
 
 export const Typography = {
   title: {
-    fontSize: 32,
+    fontSize: isSmallScreen ? 28 : 32,
     fontWeight: '700' as const,
     fontFamily: 'Inter-Bold',
-    lineHeight: 40,
+    lineHeight: isSmallScreen ? 36 : 40,
   },
   subtitle: {
-    fontSize: 24,
+    fontSize: isSmallScreen ? 20 : 24,
     fontWeight: '600' as const,
     fontFamily: 'Inter-Bold',
-    lineHeight: 32,
+    lineHeight: isSmallScreen ? 28 : 32,
   },
   heading: {
-    fontSize: 20,
+    fontSize: isSmallScreen ? 18 : 20,
     fontWeight: '600' as const,
     fontFamily: 'Inter-Bold',
-    lineHeight: 28,
+    lineHeight: isSmallScreen ? 24 : 28,
   },
   paragraph: {
-    fontSize: 16,
+    fontSize: isSmallScreen ? 15 : 16,
     fontWeight: '500' as const,
     fontFamily: 'Inter-Medium',
-    lineHeight: 24,
+    lineHeight: isSmallScreen ? 22 : 24,
   },
   secondary: {
-    fontSize: 14,
+    fontSize: isSmallScreen ? 13 : 14,
     fontWeight: '500' as const,
     fontFamily: 'Inter-Medium',
-    lineHeight: 20,
+    lineHeight: isSmallScreen ? 18 : 20,
   },
   small: {
-    fontSize: 12,
+    fontSize: isSmallScreen ? 11 : 12,
     fontWeight: '500' as const,
     fontFamily: 'Inter-Medium',
-    lineHeight: 16,
+    lineHeight: isSmallScreen ? 14 : 16,
   },
   caption: {
-    fontSize: 11,
+    fontSize: isSmallScreen ? 10 : 11,
     fontWeight: '400' as const,
     fontFamily: 'Inter-Regular',
-    lineHeight: 14,
+    lineHeight: isSmallScreen ? 12 : 14,
   },
 };
 
@@ -132,4 +137,11 @@ export const Animation = {
   fast: 200,
   normal: 300,
   slow: 500,
+};
+
+// Mobile-specific constants
+export const Mobile = {
+  isSmallScreen,
+  minTouchTarget: 44,
+  safeHitSlop: { top: 10, bottom: 10, left: 10, right: 10 },
 };

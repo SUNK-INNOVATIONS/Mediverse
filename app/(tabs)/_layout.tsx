@@ -1,9 +1,12 @@
 import React from 'react';
 import { Tabs } from 'expo-router';
-import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
-import { Chrome as Home, Heart, MessageCircle, User, Book, ChartBar as BarChart3 } from 'lucide-react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Platform, Dimensions } from 'react-native';
+import { Chrome as Home, Heart, MessageCircle, User, Book } from 'lucide-react-native';
 import { Colors, Typography, Spacing, Shadow } from '@/constants/theme';
 import { BlurView } from 'expo-blur';
+
+const { width } = Dimensions.get('window');
+const isSmallScreen = width < 375;
 
 const TABS = [
   {
@@ -79,10 +82,11 @@ function TabBarContent({ state, descriptors, navigation }: any) {
             onPress={onPress}
             style={[styles.tabItem, isFocused && styles.activeTabItem]}
             activeOpacity={0.7}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
             <View style={[styles.iconContainer, isFocused && styles.activeIconContainer]}>
               <Icon 
-                size={20} 
+                size={isSmallScreen ? 18 : 20} 
                 color={isFocused ? Colors.white : Colors.gray500} 
                 strokeWidth={2.5}
               />
@@ -92,6 +96,7 @@ function TabBarContent({ state, descriptors, navigation }: any) {
                 styles.tabLabel,
                 isFocused ? styles.activeTabLabel : styles.inactiveTabLabel
               ]}
+              numberOfLines={1}
             >
               {tab.title}
             </Text>
@@ -130,8 +135,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     paddingBottom: Platform.OS === 'ios' ? 34 : 16,
     paddingTop: 12,
-    paddingHorizontal: Spacing.lg,
+    paddingHorizontal: isSmallScreen ? Spacing.md : Spacing.lg,
     borderTopWidth: 0,
+    minHeight: Platform.OS === 'ios' ? 84 : 68,
   },
   androidTabBar: {
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
@@ -148,16 +154,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: Spacing.xs,
-    paddingHorizontal: Spacing.sm,
+    paddingHorizontal: isSmallScreen ? Spacing.xs : Spacing.sm,
     borderRadius: 20,
-    minWidth: 60,
+    minWidth: isSmallScreen ? 50 : 60,
+    minHeight: 44, // Minimum touch target for accessibility
   },
   activeTabItem: {
     backgroundColor: Colors.purple + '15',
   },
   iconContainer: {
-    padding: Spacing.xs,
-    borderRadius: 16,
+    padding: isSmallScreen ? 6 : Spacing.xs,
+    borderRadius: isSmallScreen ? 14 : 16,
     marginBottom: 2,
   },
   activeIconContainer: {
@@ -166,6 +173,7 @@ const styles = StyleSheet.create({
   tabLabel: {
     ...Typography.caption,
     textAlign: 'center',
+    fontSize: isSmallScreen ? 10 : 11,
   },
   activeTabLabel: {
     color: Colors.purple,

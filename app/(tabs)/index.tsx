@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Image,
   Dimensions,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -22,12 +23,15 @@ import {
   Sparkles,
   Calendar,
   Target,
+  ChevronRight,
 } from 'lucide-react-native';
 import { Colors, Typography, Spacing, BorderRadius, Shadow } from '@/constants/theme';
 import AnimatedCard from '@/components/AnimatedCard';
 import FloatingActionButton from '@/components/FloatingActionButton';
 
 const { width } = Dimensions.get('window');
+const isSmallScreen = width < 375;
+const cardPadding = isSmallScreen ? Spacing.md : Spacing.lg;
 
 export default function HomeScreen() {
   const [currentMood, setCurrentMood] = useState('😊');
@@ -84,14 +88,19 @@ export default function HomeScreen() {
           style={styles.scrollView} 
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
+          bounces={true}
+          scrollEventThrottle={16}
         >
           {/* Header */}
           <View style={styles.header}>
-            <View>
+            <View style={styles.headerLeft}>
               <Text style={styles.greeting}>Good Morning</Text>
               <Text style={styles.userName}>Sarah ✨</Text>
             </View>
-            <TouchableOpacity style={styles.notificationButton}>
+            <TouchableOpacity 
+              style={styles.notificationButton}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
               <View style={styles.notificationBadge}>
                 <Bell size={20} color={Colors.gray600} />
                 <View style={styles.badge} />
@@ -101,40 +110,50 @@ export default function HomeScreen() {
 
           {/* Mood Status Card */}
           <AnimatedCard style={styles.moodCard} delay={100}>
-            <LinearGradient
-              colors={Colors.gradientPurple}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.moodGradient}
+            <TouchableOpacity 
+              onPress={() => router.push('/mood')}
+              activeOpacity={0.95}
+              style={styles.moodCardTouchable}
             >
-              <View style={styles.moodHeader}>
-                <View>
-                  <Text style={styles.moodTitle}>How are you feeling?</Text>
-                  <Text style={styles.moodSubtitle}>Track your emotional journey</Text>
-                </View>
-                <View style={styles.moodEmoji}>
-                  <Text style={styles.currentMood}>{currentMood}</Text>
-                </View>
-              </View>
-              <TouchableOpacity 
-                style={styles.trackMoodButton}
-                onPress={() => router.push('/mood')}
+              <LinearGradient
+                colors={Colors.gradientPurple}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.moodGradient}
               >
-                <Sparkles size={16} color={Colors.purple} />
-                <Text style={styles.trackMoodButtonText}>Track Your Mood</Text>
-              </TouchableOpacity>
-            </LinearGradient>
+                <View style={styles.moodHeader}>
+                  <View style={styles.moodTextContainer}>
+                    <Text style={styles.moodTitle}>How are you feeling?</Text>
+                    <Text style={styles.moodSubtitle}>Track your emotional journey</Text>
+                  </View>
+                  <View style={styles.moodEmoji}>
+                    <Text style={styles.currentMood}>{currentMood}</Text>
+                  </View>
+                </View>
+                <View style={styles.trackMoodButton}>
+                  <Sparkles size={16} color={Colors.purple} />
+                  <Text style={styles.trackMoodButtonText}>Track Your Mood</Text>
+                  <ChevronRight size={16} color={Colors.purple} />
+                </View>
+              </LinearGradient>
+            </TouchableOpacity>
           </AnimatedCard>
 
           {/* Quick Stats */}
           <View style={styles.statsContainer}>
             {stats.map((stat, index) => (
               <AnimatedCard key={stat.label} style={styles.statCard} delay={200} index={index}>
-                <View style={[styles.statIcon, { backgroundColor: stat.color + '15' }]}>
-                  <stat.icon size={20} color={stat.color} />
-                </View>
-                <Text style={styles.statValue}>{stat.value}</Text>
-                <Text style={styles.statLabel}>{stat.label}</Text>
+                <TouchableOpacity 
+                  style={styles.statContent}
+                  activeOpacity={0.8}
+                  hitSlop={{ top: 5, bottom: 5, left: 5, right: 5 }}
+                >
+                  <View style={[styles.statIcon, { backgroundColor: stat.color + '15' }]}>
+                    <stat.icon size={18} color={stat.color} />
+                  </View>
+                  <Text style={styles.statValue}>{stat.value}</Text>
+                  <Text style={styles.statLabel}>{stat.label}</Text>
+                </TouchableOpacity>
               </AnimatedCard>
             ))}
           </View>
@@ -156,11 +175,11 @@ export default function HomeScreen() {
                       end={{ x: 1, y: 1 }}
                       style={styles.quickActionIcon}
                     >
-                      <action.icon size={24} color={Colors.white} />
+                      <action.icon size={22} color={Colors.white} />
                     </LinearGradient>
                     <Text style={styles.quickActionText}>{action.title}</Text>
                   </TouchableOpacity>
-                </AnimatedCard>
+                </TouchableOpacity>
               ))}
             </View>
           </View>
@@ -169,7 +188,10 @@ export default function HomeScreen() {
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>Suggested for You</Text>
-              <TouchableOpacity onPress={() => router.push('/suggestions')}>
+              <TouchableOpacity 
+                onPress={() => router.push('/suggestions')}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
                 <Text style={styles.seeAllText}>See All</Text>
               </TouchableOpacity>
             </View>
@@ -178,10 +200,16 @@ export default function HomeScreen() {
               horizontal 
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={styles.suggestionsContainer}
+              decelerationRate="fast"
+              snapToInterval={220}
+              snapToAlignment="start"
             >
               {suggestions.map((suggestion, index) => (
                 <AnimatedCard key={suggestion.id} style={styles.suggestionCard} delay={400} index={index}>
-                  <TouchableOpacity activeOpacity={0.9}>
+                  <TouchableOpacity 
+                    activeOpacity={0.9}
+                    style={styles.suggestionTouchable}
+                  >
                     <View style={styles.suggestionImageContainer}>
                       <Image source={{ uri: suggestion.image }} style={styles.suggestionImage} />
                       <LinearGradient
@@ -227,7 +255,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 120,
+    paddingBottom: Platform.OS === 'ios' ? 140 : 120,
   },
   header: {
     flexDirection: 'row',
@@ -235,6 +263,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: Spacing.xl,
     paddingVertical: Spacing.lg,
+  },
+  headerLeft: {
+    flex: 1,
   },
   greeting: {
     ...Typography.secondary,
@@ -247,6 +278,7 @@ const styles = StyleSheet.create({
   },
   notificationButton: {
     padding: Spacing.sm,
+    borderRadius: 20,
   },
   notificationBadge: {
     position: 'relative',
@@ -266,8 +298,11 @@ const styles = StyleSheet.create({
     padding: 0,
     overflow: 'hidden',
   },
+  moodCardTouchable: {
+    borderRadius: BorderRadius.lg,
+  },
   moodGradient: {
-    padding: Spacing.xl,
+    padding: cardPadding,
     borderRadius: BorderRadius.lg,
   },
   moodHeader: {
@@ -276,26 +311,32 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: Spacing.lg,
   },
+  moodTextContainer: {
+    flex: 1,
+    marginRight: Spacing.md,
+  },
   moodTitle: {
     ...Typography.heading,
     color: Colors.white,
     marginBottom: 4,
+    fontSize: isSmallScreen ? 18 : 20,
   },
   moodSubtitle: {
     ...Typography.secondary,
     color: Colors.white,
     opacity: 0.9,
+    fontSize: isSmallScreen ? 13 : 14,
   },
   moodEmoji: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: isSmallScreen ? 50 : 60,
+    height: isSmallScreen ? 50 : 60,
+    borderRadius: isSmallScreen ? 25 : 30,
     backgroundColor: 'rgba(255,255,255,0.2)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   currentMood: {
-    fontSize: 28,
+    fontSize: isSmallScreen ? 24 : 28,
   },
   trackMoodButton: {
     flexDirection: 'row',
@@ -303,29 +344,37 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: Colors.white,
     paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.lg,
     borderRadius: BorderRadius.md,
     gap: Spacing.sm,
+    minHeight: 44, // Minimum touch target
   },
   trackMoodButtonText: {
     ...Typography.secondary,
     color: Colors.purple,
     fontFamily: 'Inter-Bold',
+    fontSize: isSmallScreen ? 13 : 14,
   },
   statsContainer: {
     flexDirection: 'row',
     paddingHorizontal: Spacing.xl,
     marginBottom: Spacing.xl,
-    gap: Spacing.md,
+    gap: Spacing.sm,
   },
   statCard: {
     flex: 1,
+    padding: cardPadding,
+    minHeight: 80,
+  },
+  statContent: {
     alignItems: 'center',
-    padding: Spacing.lg,
+    justifyContent: 'center',
+    flex: 1,
   },
   statIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: isSmallScreen ? 32 : 40,
+    height: isSmallScreen ? 32 : 40,
+    borderRadius: isSmallScreen ? 16 : 20,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: Spacing.sm,
@@ -334,11 +383,13 @@ const styles = StyleSheet.create({
     ...Typography.heading,
     color: Colors.black,
     marginBottom: 2,
+    fontSize: isSmallScreen ? 16 : 20,
   },
   statLabel: {
     ...Typography.caption,
     color: Colors.gray600,
     textAlign: 'center',
+    fontSize: isSmallScreen ? 10 : 11,
   },
   section: {
     marginBottom: Spacing.xl,
@@ -353,30 +404,36 @@ const styles = StyleSheet.create({
   sectionTitle: {
     ...Typography.heading,
     color: Colors.black,
+    fontSize: isSmallScreen ? 18 : 20,
   },
   seeAllText: {
     ...Typography.secondary,
     color: Colors.purple,
     fontFamily: 'Inter-Bold',
+    fontSize: isSmallScreen ? 13 : 14,
   },
   quickActionsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     paddingHorizontal: Spacing.lg,
-    gap: Spacing.md,
+    gap: Spacing.sm,
   },
   quickActionCard: {
-    width: (width - Spacing.lg * 2 - Spacing.md) / 2,
+    width: (width - Spacing.lg * 2 - Spacing.sm) / 2,
     padding: 0,
+    minHeight: isSmallScreen ? 100 : 120,
   },
   quickActionContent: {
-    padding: Spacing.lg,
+    padding: cardPadding,
     alignItems: 'center',
+    justifyContent: 'center',
+    flex: 1,
+    minHeight: 44, // Minimum touch target
   },
   quickActionIcon: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: isSmallScreen ? 48 : 56,
+    height: isSmallScreen ? 48 : 56,
+    borderRadius: isSmallScreen ? 24 : 28,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: Spacing.md,
@@ -386,19 +443,24 @@ const styles = StyleSheet.create({
     color: Colors.black,
     fontFamily: 'Inter-Bold',
     textAlign: 'center',
+    fontSize: isSmallScreen ? 13 : 14,
   },
   suggestionsContainer: {
     paddingLeft: Spacing.xl,
+    paddingRight: Spacing.md,
     gap: Spacing.md,
   },
   suggestionCard: {
-    width: 200,
+    width: isSmallScreen ? 180 : 200,
     padding: 0,
     overflow: 'hidden',
   },
+  suggestionTouchable: {
+    borderRadius: BorderRadius.lg,
+  },
   suggestionImageContainer: {
     position: 'relative',
-    height: 120,
+    height: isSmallScreen ? 100 : 120,
   },
   suggestionImage: {
     width: '100%',
@@ -426,26 +488,29 @@ const styles = StyleSheet.create({
     ...Typography.caption,
     color: Colors.white,
     fontFamily: 'Inter-Bold',
+    fontSize: 10,
   },
   suggestionContent: {
-    padding: Spacing.lg,
+    padding: cardPadding,
   },
   suggestionTitle: {
     ...Typography.paragraph,
     color: Colors.black,
     fontFamily: 'Inter-Bold',
     marginBottom: 4,
+    fontSize: isSmallScreen ? 14 : 16,
   },
   suggestionSubtitle: {
     ...Typography.small,
     color: Colors.gray600,
+    fontSize: isSmallScreen ? 11 : 12,
   },
   bottomSpacing: {
-    height: 100,
+    height: 20,
   },
   fabContainer: {
     position: 'absolute',
-    bottom: 100,
+    bottom: Platform.OS === 'ios' ? 110 : 90,
     right: Spacing.xl,
   },
 });

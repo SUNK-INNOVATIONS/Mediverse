@@ -1,5 +1,5 @@
 import React from 'react';
-import { TouchableOpacity, StyleSheet, ViewStyle } from 'react-native';
+import { TouchableOpacity, StyleSheet, ViewStyle, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { 
   useSharedValue, 
@@ -43,6 +43,7 @@ export default function FloatingActionButton({
       style={[styles.container, animatedStyle, style]}
       onPress={handlePress}
       activeOpacity={0.8}
+      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
     >
       <LinearGradient
         colors={colors}
@@ -62,6 +63,8 @@ const styles = StyleSheet.create({
     height: 56,
     borderRadius: 28,
     ...Shadow.large,
+    // Ensure proper elevation on Android
+    elevation: Platform.OS === 'android' ? 8 : undefined,
   },
   gradient: {
     flex: 1,
