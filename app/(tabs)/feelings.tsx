@@ -11,7 +11,6 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { ArrowLeft, X } from 'lucide-react-native';
-import FeelingsComponent from '@/components/FeelingsComponent';
 import Slider from '@react-native-community/slider';
 import { Colors, Typography, Spacing, BorderRadius, Shadow } from '@/constants/theme';
 import FeelingGrid from '@/components/FeelingsComponent';
