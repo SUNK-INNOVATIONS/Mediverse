@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { Mail, Lock, User, Eye, EyeOff } from 'lucide-react-native';
+import { Mail, Lock, User, Eye, EyeOff, CheckCircle, AlertCircle } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors, Typography, Spacing, BorderRadius, Shadow } from '@/constants/theme';
 import { signUp } from '@/lib/supabase';
@@ -29,10 +29,31 @@ export default function RegisterScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   const handleRegister = async () => {
-    if (!formData.fullName || !formData.email || !formData.password || !formData.confirmPassword) {
-      setError('Please fill in all fields');
+    // Clear previous messages
+    setError(null);
+    setSuccess(null);
+
+    // Validation
+    if (!formData.fullName.trim()) {
+      setError('Please enter your full name');
+      return;
+    }
+
+    if (!formData.email.trim()) {
+      setError('Please enter your email address');
+      return;
+    }
+
+    if (!formData.password) {
+      setError('Please enter a password');
+      return;
+    }
+
+    if (!formData.confirmPassword) {
+      setError('Please confirm your password');
       return;
     }
 
@@ -52,25 +73,43 @@ export default function RegisterScreen() {
     }
 
     setIsLoading(true);
-    setError(null);
     
     try {
-      const { data, error } = await signUp(formData.email, formData.password, formData.fullName);
+      console.log('Starting registration process...');
+      
+      const { data, error } = await signUp(
+        formData.email.trim(),
+        formData.password,
+        formData.fullName.trim()
+      );
       
       if (error) {
+        console.error('Registration error:', error);
         setError(error.message);
         return;
       }
 
       if (data.user) {
-        Alert.alert(
-          'Success', 
-          'Account created successfully! You can now sign in.',
-          [{ text: 'OK', onPress: () => router.replace('/(tabs)') }]
-        );
+        console.log('Registration successful:', data.user.email);
+        setSuccess('Account created successfully! You can now sign in.');
+        
+        // Clear form
+        setFormData({
+          fullName: '',
+          email: '',
+          password: '',
+          confirmPassword: '',
+        });
+        setAgreeToTerms(false);
+        
+        // Navigate to login after a short delay
+        setTimeout(() => {
+          router.replace('/auth/login');
+        }, 2000);
       }
     } catch (error) {
-      setError('An unexpected error occurred');
+      console.error('Unexpected registration error:', error);
+      setError('An unexpected error occurred. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -78,7 +117,9 @@ export default function RegisterScreen() {
 
   const updateFormData = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    setError(null);
+    // Clear error when user starts typing
+    if (error) setError(null);
+    if (success) setSuccess(null);
   };
 
   return (
@@ -111,7 +152,15 @@ export default function RegisterScreen() {
               <View style={styles.form}>
                 {error && (
                   <View style={styles.errorContainer}>
+                    <AlertCircle size={20} color={Colors.error} />
                     <Text style={styles.errorText}>{error}</Text>
+                  </View>
+                )}
+
+                {success && (
+                  <View style={styles.successContainer}>
+                    <CheckCircle size={20} color={Colors.success} />
+                    <Text style={styles.successText}>{success}</Text>
                   </View>
                 )}
 
@@ -295,6 +344,8 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.xxl,
   },
   errorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: Colors.error + '10',
     borderWidth: 1,
     borderColor: Colors.error + '30',
@@ -305,7 +356,24 @@ const styles = StyleSheet.create({
   errorText: {
     ...Typography.secondary,
     color: Colors.error,
-    textAlign: 'center',
+    marginLeft: Spacing.sm,
+    flex: 1,
+  },
+  successContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.success + '10',
+    borderWidth: 1,
+    borderColor: Colors.success + '30',
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    marginBottom: Spacing.lg,
+  },
+  successText: {
+    ...Typography.secondary,
+    color: Colors.success,
+    marginLeft: Spacing.sm,
+    flex: 1,
   },
   inputContainer: {
     marginBottom: Spacing.lg,
