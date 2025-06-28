@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { NavigationContainer } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import {
@@ -52,7 +53,7 @@ export default function RootLayout() {
   }
 
   return (
-    <>
+    <NavigationContainer>
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="splash" />
         <Stack.Screen name="onboarding" />
@@ -67,6 +68,6 @@ export default function RootLayout() {
         <Stack.Screen name="+not-found" />
       </Stack>
       <StatusBar style="dark" />
-    </>
+    </NavigationContainer>
   );
 }

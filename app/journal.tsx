@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native';
 import JournalEntry from '../types/JournalEntry';
 import JournalEntryComponent from '../components/JournalEntryComponent';
-import { supabase } from '../supabase';
+import { createClient } from '../supabase';
+
+const supabase = createClient();
 
 const Journal = () => {
   const [entries, setEntries] = useState<JournalEntry[]>([]);
