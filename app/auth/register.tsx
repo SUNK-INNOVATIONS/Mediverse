@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { Mail, Lock, User, Eye, EyeOff, CheckCircle, AlertCircle } from 'lucide-react-native';
+import { Mail, Lock, User, Eye, EyeOff, CircleCheck as CheckCircle, CircleAlert as AlertCircle } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors, Typography, Spacing, BorderRadius, Shadow } from '@/constants/theme';
 import { signUp } from '@/lib/supabase';
