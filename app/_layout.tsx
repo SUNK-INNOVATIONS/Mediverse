@@ -10,9 +10,6 @@ import {
 } from '@expo-google-fonts/inter';
 import { useFrameworkReady } from '@/hooks/useFrameworkReady';
 
-// Prevent splash screen from auto-hiding
-SplashScreen.preventAutoHideAsync();
-
 export default function RootLayout() {
   useFrameworkReady();
   
@@ -25,10 +22,11 @@ export default function RootLayout() {
   const [appIsReady, setAppIsReady] = useState(false);
 
   useEffect(() => {
+    // Prevent splash screen from auto-hiding
+    SplashScreen.preventAutoHideAsync();
+
     async function prepare() {
       try {
-        // Keep splash screen visible while we fetch resources
-        await SplashScreen.preventAutoHideAsync();
         // Artificial delay for splash screen
         await new Promise(resolve => setTimeout(resolve, 2000));
       } catch (e) {

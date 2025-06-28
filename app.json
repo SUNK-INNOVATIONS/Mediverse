@@ -34,7 +34,9 @@
       },
       "eas": {
         "projectId": "12d25505-fe5f-4d92-bcb5-c37ca36ef41f"
-      }
+      },
+      "supabaseUrl": "https://your-project.supabase.co",
+      "supabaseAnonKey": "your-anon-key-here"
     },
     "android": {
       "package": "com.jahnviaghera.boltexponativewind"
