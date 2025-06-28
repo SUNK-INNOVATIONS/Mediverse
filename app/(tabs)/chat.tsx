@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import {
   View,
   Text,
@@ -12,6 +13,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Send, Bot, User } from 'lucide-react-native';
 import { Colors, Typography, Spacing, BorderRadius, Shadow } from '@/constants/theme';
+import Markdown from 'react-native-markdown-display';
 
 interface Message {
   id: string;
@@ -35,15 +37,8 @@ export default function ChatScreen() {
   const [isTyping, setIsTyping] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
 
-  const aiResponses = [
-    'I understand how you\'re feeling. It\'s completely normal to have days like this.',
-    'Thank you for sharing that with me. Your feelings are valid.',
-    'It sounds like you\'re going through a lot right now. I\'m here to listen.',
-    'That\'s wonderful to hear! What do you think contributed to feeling this way?',
-    'I can sense some anxiety in your message. Would you like to try a breathing exercise?',
-    'Your progress is inspiring. Remember to celebrate these small victories.',
-    'It\'s okay to not be okay sometimes. What usually helps you feel better?',
-  ];
+  const gemini = new GoogleGenerativeAI('AIzaSyDOEmyGY7Jfl-4SvJj2Z-4hzdFtnwPwOvs');
+  const model = gemini.getGenerativeModel({ model: "gemini-2.0-flash"});
 
   const detectMood = (text: string): 'positive' | 'neutral' | 'negative' => {
     const positiveWords = ['happy', 'good', 'great', 'amazing', 'wonderful', 'excited', 'grateful'];
@@ -73,19 +68,29 @@ export default function ChatScreen() {
     setInputText('');
     setIsTyping(true);
 
-    // Simulate AI response
-    setTimeout(() => {
+    const previousMessages = messages.map(message => `${message.isUser ? 'User' : ''}: ${message.text}`).join('\n');
+    const mood = detectMood(inputText);
+    const prompt = `Respond to the following prompt in a concise and direct manner, considering the user's mood (${mood}) and the previous conversation:\n${previousMessages}\nUser: ${inputText}`;
+
+    model.generateContent(prompt).then(result => {
+      let responseText = '';
+      if (result && result.response && result.response.candidates && result.response.candidates[0].content && result.response.candidates[0].content.parts) {
+        responseText = result.response.candidates[0].content.parts
+          .map((part: any) => part.text)
+          .join('');
+      } else {
+        responseText = 'Sorry, I couldn\'t generate a response.';
+      }
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: aiResponses[Math.floor(Math.random() * aiResponses.length)],
+        text: responseText,
         isUser: false,
         timestamp: new Date(),
         mood: 'positive',
       };
-      
       setMessages(prev => [...prev, aiMessage]);
       setIsTyping(false);
-    }, 1500);
+    });
   };
 
   useEffect(() => {
@@ -132,14 +137,16 @@ export default function ChatScreen() {
           message.isUser ? styles.userBubble : styles.aiBubble,
         ]}
       >
-        <Text
-          style={[
-            styles.messageText,
-            message.isUser ? styles.userText : styles.aiText,
-          ]}
+        <Markdown
+          style={{
+            body: {
+              ...Typography.paragraph,
+              color: message.isUser ? Colors.white : Colors.black,
+            },
+          }}
         >
           {message.text}
-        </Text>
+        </Markdown>
       </View>
       
       <Text style={styles.timestamp}>
@@ -203,6 +210,7 @@ export default function ChatScreen() {
             multiline
             maxLength={500}
           />
+          <Text style={styles.sentiment}>Sentiment: {detectMood(inputText)}</Text>
           <TouchableOpacity
             style={[
               styles.sendButton,
@@ -360,5 +368,10 @@ const styles = StyleSheet.create({
   },
   disabledSendButton: {
     backgroundColor: Colors.gray400,
+  },
+  sentiment: {
+    ...Typography.small,
+    color: Colors.gray500,
+    marginTop: Spacing.xs,
   },
 });

@@ -1,72 +1,117 @@
-import { Tabs } from 'expo-router';
-import { Home, Heart, MessageCircle, User, History } from 'lucide-react-native';
+import React from 'react';
+import { Tabs, useRouter, usePathname } from 'expo-router';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { Home, Heart, MessageCircle, User, History, Book } from 'lucide-react-native';
 import { Colors } from '@/constants/theme';
+
+// Define tabs and control which ones are shown
+const TABS = [
+  {
+    name: ' ',
+    title: 'Home',
+    icon: Home,
+    show: true,
+  },
+      {
+    name: 'mood',
+    title: 'Mood',
+    icon: Heart,
+    show: true,
+  },
+  {
+    name: 'chat',
+    title: 'Chat',
+    icon: MessageCircle,
+    show: true,
+  },
+
+  {
+    name: 'history',
+    title: 'History',
+    icon: History,
+    show: false, // Change to true to show
+  },
+  {
+    name: 'profile',
+    title: 'Profile',
+    icon: User,
+    show: true,
+  },
+  {
+    name: 'context',
+    title: 'Context',
+    icon: Heart, // Replace with appropriate icon
+    show: false,
+  },
+  {
+    name: 'journal',
+    title: 'Journal',
+    icon: Book, // Replace with appropriate icon
+    show: true,
+  },
+];
+
+function CustomTabBar() {
+  const router = useRouter();
+  const pathname = usePathname();
+
+  return (
+    <View style={styles.tabBar}>
+      {TABS.filter(tab => tab.show).map((tab) => {
+        const isActive = pathname === `/${tab.name}`;
+        const Icon = tab.icon;
+        return (
+          <TouchableOpacity
+            key={tab.name}
+            onPress={() => router.push(('/' + tab.name) as any)}
+            style={styles.tabItem}
+          >
+            <Icon size={24} color={isActive ? Colors.purple : Colors.gray500} />
+            <Text
+              style={{
+                color: isActive ? Colors.purple : Colors.gray500,
+                fontSize: 12,
+                fontFamily: 'Inter-Medium',
+              }}
+            >
+              {tab.title}
+            </Text>
+          </TouchableOpacity>
+        );
+      })}
+    </View>
+  );
+}
 
 export default function TabLayout() {
   return (
     <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarStyle: {
-          backgroundColor: Colors.white,
-          borderTopColor: Colors.gray200,
-          height: 84,
-          paddingBottom: 20,
-          paddingTop: 8,
-        },
-        tabBarActiveTintColor: Colors.purple,
-        tabBarInactiveTintColor: Colors.gray500,
-        tabBarLabelStyle: {
-          fontSize: 12,
-          fontFamily: 'Inter-Medium',
-        },
-      }}
+      screenOptions={{ headerShown: false }}
+      tabBar={() => <CustomTabBar />}
     >
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ size, color }) => (
-            <Home size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="chat"
-        options={{
-          title: 'Chat',
-          tabBarIcon: ({ size, color }) => (
-            <MessageCircle size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="history"
-        options={{
-          title: 'History',
-          tabBarIcon: ({ size, color }) => (
-            <History size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: 'Profile',
-          tabBarIcon: ({ size, color }) => (
-            <User size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="mood"
-        options={{
-          title: 'Mood',
-          tabBarIcon: ({ size, color }) => (
-            <Heart size={size} color={color} />
-          ),
-        }}
-      />
+      {TABS.filter(tab => tab.show).map((tab) => (
+        <Tabs.Screen
+          key={tab.name}
+          name={tab.name}
+          options={{ title: tab.title }}
+        />
+      ))}
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  tabBar: {
+    flexDirection: 'row',
+    backgroundColor: Colors.white,
+    borderTopColor: Colors.gray200,
+    borderTopWidth: 1,
+    height: 84,
+    paddingBottom: 20,
+    paddingTop: 8,
+    justifyContent: 'space-around',
+  },
+  tabItem: {
+    alignItems: 'center',
+  },
+});

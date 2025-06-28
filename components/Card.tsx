@@ -5,20 +5,20 @@ interface CardProps {
   children: React.ReactNode;
   style?: ViewStyle;
   padding?: keyof typeof Spacing;
-  shadow?: keyof typeof Shadow;
+  boxShadow?: keyof typeof Shadow;
 }
 
 export default function Card({ 
   children, 
   style, 
   padding = 'lg',
-  shadow = 'small' 
+  boxShadow = 'small' 
 }: CardProps) {
   return (
     <View style={[
       styles.card,
       { padding: Spacing[padding] },
-      Shadow[shadow],
+      Shadow[boxShadow],
       style,
     ]}>
       {children}

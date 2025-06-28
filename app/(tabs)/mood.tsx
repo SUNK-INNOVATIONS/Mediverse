@@ -36,7 +36,7 @@ export default function MoodTrackerScreen() {
   const scrollRef = useRef<FlatList>(null);
 
   const handleNext = () => {
-    router.push('/(tabs)/feelings');
+    router.push('/(tabs)/context');
   };
 
   const selectedEmotion = emotions.find(e => e.id === selectedEmotionId);

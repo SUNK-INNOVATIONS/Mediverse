@@ -1,51 +1,31 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
-  Animated,
-  Easing,
+  TextInput,
+  ScrollView,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { ArrowLeft, X } from 'lucide-react-native';
 import { Colors, Typography, Spacing, BorderRadius, Shadow } from '@/constants/theme';
 
-export default function SelectedActivityScreen() {
-  const [timer, setTimer] = useState(0);
-  const [inhale, setInhale] = useState(true);
-  const animation = useState(new Animated.Value(0))[0];
+export default function PostSupportReflectionScreen() {
+  const [selectedMood, setSelectedMood] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState('');
 
-  useEffect(() => {
-    Animated.loop(
-      Animated.timing(animation, {
-        toValue: 1,
-        duration: 4000,
- easing: Easing.linear,
-        useNativeDriver: false,
-      })
-    ).start();
-
-    const intervalId = setInterval(() => {
-      setTimer((prevTimer) => prevTimer + 1);
-      setInhale((prevInhale) => !prevInhale);
-    }, 4000);
-
-    return () => {
-      clearInterval(intervalId);
-      animation.stopAnimation();
-    };
-  }, [animation]);
-
-  const orbSize = animation.interpolate({
-    inputRange: [0, 1],
-    outputRange: [50, 150],
-  });
-
- const handleFinish = () => {
-    router.push('/(tabs)/postsupport');
+  const handleDone = () => {
+    router.push('/(tabs)/mood');
   };
+
+  const moods = [
+    { id: 'happy', image: require('@/assets/images/happy-emoji.png') },
+    { id: 'neutral', image: require('@/assets/images/happy-emoji.png') }, // Replace with neutral emoji
+    { id: 'sad', image: require('@/assets/images/sad-emoji.png') },
+  ];
 
   return (
     <SafeAreaView style={styles.container}>
@@ -60,24 +40,36 @@ export default function SelectedActivityScreen() {
           <X size={24} color={Colors.gray600} />
         </TouchableOpacity>
       </View>
-      <View style={styles.content}>
-        <Text style={styles.sectionTitle}>Breathe with me</Text>
-        <Animated.View style={[
-          styles.orb,
-          {
-            width: orbSize,
-            height: orbSize,
-            borderRadius: orbSize,
-          },
-        ]} />
-        <Text style={styles.timerText}>{inhale ? 'Inhale' : 'Exhale'}</Text>
+      <ScrollView style={styles.content}>
+        <Text style={styles.sectionTitle}>How are you feeling now?</Text>
+        <View style={styles.moodRow}>
+          {moods.map((mood) => (
+            <TouchableOpacity
+              key={mood.id}
+              style={[
+                styles.moodButton,
+                selectedMood === mood.id && styles.selectedMoodButton,
+              ]}
+              onPress={() => setSelectedMood(mood.id)}
+            >
+              <Image source={mood.image} style={styles.moodImage} />
+            </TouchableOpacity>
+          ))}
+        </View>
+        <TextInput
+          style={styles.feedbackBox}
+          placeholder="Leave a note"
+          value={feedback}
+          onChangeText={setFeedback}
+          multiline
+        />
         <TouchableOpacity
-          style={styles.finishButton}
-          onPress={handleFinish}
+          style={styles.doneButton}
+          onPress={handleDone}
         >
-          <Text style={styles.finishButtonText}>Finish</Text>
+          <Text style={styles.doneButtonText}>Done</Text>
         </TouchableOpacity>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -119,20 +111,36 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
     paddingVertical: Spacing.lg,
   },
-  orb: {
-    backgroundColor: Colors.purple,
-  },
-  timerText: {
-    ...Typography.paragraph,
-    color: Colors.black,
-    marginTop: Spacing.xxl,
+  moodRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
     marginBottom: Spacing.xxl,
   },
-  finishButton: {
+  moodButton: {
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+  },
+  selectedMoodButton: {
+    backgroundColor: Colors.gray200,
+  },
+  moodImage: {
+    width: 50,
+    height: 50,
+    resizeMode: 'contain',
+  },
+  feedbackBox: {
+    backgroundColor: Colors.gray100,
+    borderRadius: BorderRadius.md,
+    marginHorizontal: Spacing.xl,
+    padding: Spacing.lg,
+    marginBottom: Spacing.xxl,
+    ...Shadow.small,
+    textAlignVertical: 'top',
+    minHeight: 100,
+  },
+  doneButton: {
     backgroundColor: Colors.purple,
     marginHorizontal: Spacing.xl,
     paddingVertical: Spacing.lg,
@@ -141,7 +149,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.xxl,
     ...Shadow.medium,
   },
-  finishButtonText: {
+  doneButtonText: {
     ...Typography.paragraph,
     color: Colors.white,
     fontFamily: 'Inter-Bold',
