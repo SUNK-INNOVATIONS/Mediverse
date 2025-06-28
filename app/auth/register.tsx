@@ -28,47 +28,49 @@ export default function RegisterScreen() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [agreeToTerms, setAgreeToTerms] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleRegister = async () => {
     if (!formData.fullName || !formData.email || !formData.password || !formData.confirmPassword) {
-      Alert.alert('Error', 'Please fill in all fields');
+      setError('Please fill in all fields');
       return;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match');
+      setError('Passwords do not match');
       return;
     }
 
     if (formData.password.length < 6) {
-      Alert.alert('Error', 'Password must be at least 6 characters long');
+      setError('Password must be at least 6 characters long');
       return;
     }
 
     if (!agreeToTerms) {
-      Alert.alert('Error', 'Please agree to the terms and conditions');
+      setError('Please agree to the terms and conditions');
       return;
     }
 
     setIsLoading(true);
+    setError(null);
     
     try {
       const { data, error } = await signUp(formData.email, formData.password, formData.fullName);
       
       if (error) {
-        Alert.alert('Registration Failed', error.message);
+        setError(error.message);
         return;
       }
 
       if (data.user) {
         Alert.alert(
           'Success', 
-          'Account created successfully! Please check your email to verify your account.',
+          'Account created successfully! You can now sign in.',
           [{ text: 'OK', onPress: () => router.replace('/(tabs)') }]
         );
       }
     } catch (error) {
-      Alert.alert('Error', 'An unexpected error occurred');
+      setError('An unexpected error occurred');
     } finally {
       setIsLoading(false);
     }
@@ -76,6 +78,7 @@ export default function RegisterScreen() {
 
   const updateFormData = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    setError(null);
   };
 
   return (
@@ -106,6 +109,12 @@ export default function RegisterScreen() {
               </View>
 
               <View style={styles.form}>
+                {error && (
+                  <View style={styles.errorContainer}>
+                    <Text style={styles.errorText}>{error}</Text>
+                  </View>
+                )}
+
                 <View style={styles.inputContainer}>
                   <View style={styles.inputWrapper}>
                     <User size={20} color={Colors.gray500} />
@@ -117,6 +126,7 @@ export default function RegisterScreen() {
                       onChangeText={(value) => updateFormData('fullName', value)}
                       autoCapitalize="words"
                       autoComplete="name"
+                      editable={!isLoading}
                     />
                   </View>
                 </View>
@@ -133,6 +143,7 @@ export default function RegisterScreen() {
                       keyboardType="email-address"
                       autoCapitalize="none"
                       autoComplete="email"
+                      editable={!isLoading}
                     />
                   </View>
                 </View>
@@ -148,6 +159,7 @@ export default function RegisterScreen() {
                       onChangeText={(value) => updateFormData('password', value)}
                       secureTextEntry={!showPassword}
                       autoComplete="new-password"
+                      editable={!isLoading}
                     />
                     <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
                       {showPassword ? (
@@ -170,6 +182,7 @@ export default function RegisterScreen() {
                       onChangeText={(value) => updateFormData('confirmPassword', value)}
                       secureTextEntry={!showConfirmPassword}
                       autoComplete="new-password"
+                      editable={!isLoading}
                     />
                     <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
                       {showConfirmPassword ? (
@@ -184,6 +197,7 @@ export default function RegisterScreen() {
                 <TouchableOpacity
                   style={styles.termsContainer}
                   onPress={() => setAgreeToTerms(!agreeToTerms)}
+                  disabled={isLoading}
                 >
                   <View style={[styles.checkbox, agreeToTerms && styles.checkedBox]}>
                     {agreeToTerms && <Text style={styles.checkmark}>✓</Text>}
@@ -279,6 +293,19 @@ const styles = StyleSheet.create({
   },
   form: {
     marginBottom: Spacing.xxl,
+  },
+  errorContainer: {
+    backgroundColor: Colors.error + '10',
+    borderWidth: 1,
+    borderColor: Colors.error + '30',
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    marginBottom: Spacing.lg,
+  },
+  errorText: {
+    ...Typography.secondary,
+    color: Colors.error,
+    textAlign: 'center',
   },
   inputContainer: {
     marginBottom: Spacing.lg,

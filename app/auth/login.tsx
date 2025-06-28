@@ -21,20 +21,22 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
+      setError('Please fill in all fields');
       return;
     }
 
     setIsLoading(true);
+    setError(null);
     
     try {
       const { data, error } = await signIn(email, password);
       
       if (error) {
-        Alert.alert('Login Failed', error.message);
+        setError(error.message);
         return;
       }
 
@@ -42,7 +44,7 @@ export default function LoginScreen() {
         router.replace('/(tabs)');
       }
     } catch (error) {
-      Alert.alert('Error', 'An unexpected error occurred');
+      setError('An unexpected error occurred');
     } finally {
       setIsLoading(false);
     }
@@ -79,6 +81,12 @@ export default function LoginScreen() {
             </View>
 
             <View style={styles.form}>
+              {error && (
+                <View style={styles.errorContainer}>
+                  <Text style={styles.errorText}>{error}</Text>
+                </View>
+              )}
+
               <View style={styles.inputContainer}>
                 <View style={styles.inputWrapper}>
                   <Mail size={20} color={Colors.gray500} />
@@ -87,10 +95,14 @@ export default function LoginScreen() {
                     placeholder="Email address"
                     placeholderTextColor={Colors.gray500}
                     value={email}
-                    onChangeText={setEmail}
+                    onChangeText={(text) => {
+                      setEmail(text);
+                      setError(null);
+                    }}
                     keyboardType="email-address"
                     autoCapitalize="none"
                     autoComplete="email"
+                    editable={!isLoading}
                   />
                 </View>
               </View>
@@ -103,9 +115,13 @@ export default function LoginScreen() {
                     placeholder="Password"
                     placeholderTextColor={Colors.gray500}
                     value={password}
-                    onChangeText={setPassword}
+                    onChangeText={(text) => {
+                      setPassword(text);
+                      setError(null);
+                    }}
                     secureTextEntry={!showPassword}
                     autoComplete="password"
+                    editable={!isLoading}
                   />
                   <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
                     {showPassword ? (
@@ -221,6 +237,19 @@ const styles = StyleSheet.create({
   },
   form: {
     marginBottom: Spacing.xxl,
+  },
+  errorContainer: {
+    backgroundColor: Colors.error + '10',
+    borderWidth: 1,
+    borderColor: Colors.error + '30',
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    marginBottom: Spacing.lg,
+  },
+  errorText: {
+    ...Typography.secondary,
+    color: Colors.error,
+    textAlign: 'center',
   },
   inputContainer: {
     marginBottom: Spacing.lg,

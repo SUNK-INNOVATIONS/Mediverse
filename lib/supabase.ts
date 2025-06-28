@@ -9,39 +9,117 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: false,
+    // Add these settings to help with authentication
+    flowType: 'pkce',
+    debug: process.env.NODE_ENV === 'development',
+  },
+  global: {
+    headers: {
+      'X-Client-Info': 'mediverse-app',
+    },
   },
 });
 
-// Auth helpers
+// Auth helpers with better error handling
 export const signUp = async (email: string, password: string, fullName: string) => {
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password,
-    options: {
-      data: {
-        full_name: fullName,
+  try {
+    // Validate inputs
+    if (!email || !password || !fullName) {
+      return { 
+        data: null, 
+        error: { message: 'All fields are required' } 
+      };
+    }
+
+    if (password.length < 6) {
+      return { 
+        data: null, 
+        error: { message: 'Password must be at least 6 characters long' } 
+      };
+    }
+
+    const { data, error } = await supabase.auth.signUp({
+      email: email.trim().toLowerCase(),
+      password,
+      options: {
+        data: {
+          full_name: fullName.trim(),
+        },
       },
-    },
-  });
-  return { data, error };
+    });
+
+    return { data, error };
+  } catch (error) {
+    console.error('SignUp error:', error);
+    return { 
+      data: null, 
+      error: { message: 'An unexpected error occurred during sign up' } 
+    };
+  }
 };
 
 export const signIn = async (email: string, password: string) => {
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  });
-  return { data, error };
+  try {
+    // Validate inputs
+    if (!email || !password) {
+      return { 
+        data: null, 
+        error: { message: 'Email and password are required' } 
+      };
+    }
+
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: email.trim().toLowerCase(),
+      password,
+    });
+
+    if (error) {
+      console.error('SignIn error:', error);
+      
+      // Provide more user-friendly error messages
+      if (error.message.includes('Invalid login credentials')) {
+        return { 
+          data: null, 
+          error: { message: 'Invalid email or password. Please check your credentials and try again.' } 
+        };
+      }
+      
+      if (error.message.includes('Email not confirmed')) {
+        return { 
+          data: null, 
+          error: { message: 'Please check your email and click the confirmation link before signing in.' } 
+        };
+      }
+    }
+
+    return { data, error };
+  } catch (error) {
+    console.error('SignIn error:', error);
+    return { 
+      data: null, 
+      error: { message: 'An unexpected error occurred during sign in' } 
+    };
+  }
 };
 
 export const signOut = async () => {
-  const { error } = await supabase.auth.signOut();
-  return { error };
+  try {
+    const { error } = await supabase.auth.signOut();
+    return { error };
+  } catch (error) {
+    console.error('SignOut error:', error);
+    return { error: { message: 'Failed to sign out' } };
+  }
 };
 
 export const getCurrentUser = async () => {
-  const { data: { user }, error } = await supabase.auth.getUser();
-  return { user, error };
+  try {
+    const { data: { user }, error } = await supabase.auth.getUser();
+    return { user, error };
+  } catch (error) {
+    console.error('GetCurrentUser error:', error);
+    return { user: null, error };
+  }
 };
 
 // Profile helpers
