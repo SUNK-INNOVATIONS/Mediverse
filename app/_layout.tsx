@@ -9,6 +9,7 @@ import {
   Inter_700Bold,
 } from '@expo-google-fonts/inter';
 import { useFrameworkReady } from '@/hooks/useFrameworkReady';
+import { useAuth } from '@/hooks/useAuth';
 
 // Prevent splash screen from auto-hiding
 SplashScreen.preventAutoHideAsync();
@@ -24,6 +25,7 @@ export default function RootLayout() {
 
   const [appIsReady, setAppIsReady] = useState(false);
   const mounted = useRef(true);
+  const { loading: authLoading } = useAuth();
 
   // Track component mount status
   useEffect(() => {
@@ -38,6 +40,10 @@ export default function RootLayout() {
       try {
         // Ensure splash screen stays visible
         await SplashScreen.preventAutoHideAsync();
+        // Wait for auth to initialize
+        while (authLoading) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
         // Artificial delay for splash screen
         await new Promise(resolve => setTimeout(resolve, 2000));
       } catch (e) {
@@ -53,7 +59,7 @@ export default function RootLayout() {
     if (fontsLoaded || fontError) {
       prepare();
     }
-  }, [fontsLoaded, fontError]);
+  }, [fontsLoaded, fontError, authLoading]);
 
   useEffect(() => {
     if (appIsReady && (fontsLoaded || fontError)) {

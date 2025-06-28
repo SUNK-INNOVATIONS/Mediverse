@@ -13,7 +13,9 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Mail, Lock, User, Eye, EyeOff } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Colors, Typography, Spacing, BorderRadius, Shadow } from '@/constants/theme';
+import { signUp } from '@/lib/supabase';
 
 export default function RegisterScreen() {
   const [formData, setFormData] = useState({
@@ -38,6 +40,11 @@ export default function RegisterScreen() {
       return;
     }
 
+    if (formData.password.length < 6) {
+      Alert.alert('Error', 'Password must be at least 6 characters long');
+      return;
+    }
+
     if (!agreeToTerms) {
       Alert.alert('Error', 'Please agree to the terms and conditions');
       return;
@@ -45,13 +52,26 @@ export default function RegisterScreen() {
 
     setIsLoading(true);
     
-    // Simulate registration process
-    setTimeout(() => {
+    try {
+      const { data, error } = await signUp(formData.email, formData.password, formData.fullName);
+      
+      if (error) {
+        Alert.alert('Registration Failed', error.message);
+        return;
+      }
+
+      if (data.user) {
+        Alert.alert(
+          'Success', 
+          'Account created successfully! Please check your email to verify your account.',
+          [{ text: 'OK', onPress: () => router.replace('/(tabs)') }]
+        );
+      }
+    } catch (error) {
+      Alert.alert('Error', 'An unexpected error occurred');
+    } finally {
       setIsLoading(false);
-      Alert.alert('Success', 'Account created successfully!', [
-        { text: 'OK', onPress: () => router.replace('/(tabs)') }
-      ]);
-    }, 1500);
+    }
   };
 
   const updateFormData = (field: string, value: string) => {
@@ -59,138 +79,164 @@ export default function RegisterScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.keyboardView}
-      >
-        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-          <View style={styles.content}>
-            <View style={styles.header}>
-              <Text style={styles.title}>Create Account</Text>
-              <Text style={styles.subtitle}>Join us on your mental wellness journey</Text>
-            </View>
-
-            <View style={styles.form}>
-              <View style={styles.inputContainer}>
-                <View style={styles.inputWrapper}>
-                  <User size={20} color={Colors.gray500} />
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Full Name"
-                    placeholderTextColor={Colors.gray500}
-                    value={formData.fullName}
-                    onChangeText={(value) => updateFormData('fullName', value)}
-                    autoCapitalize="words"
-                  />
+    <View style={styles.container}>
+      <LinearGradient
+        colors={['#F8FAFC', '#F1F5F9']}
+        style={StyleSheet.absoluteFill}
+      />
+      
+      <SafeAreaView style={styles.safeArea}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.keyboardView}
+        >
+          <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+            <View style={styles.content}>
+              <View style={styles.header}>
+                <View style={styles.logoContainer}>
+                  <LinearGradient
+                    colors={Colors.gradientPurple}
+                    style={styles.logo}
+                  >
+                    <Text style={styles.logoText}>🧠</Text>
+                  </LinearGradient>
                 </View>
+                <Text style={styles.title}>Create Account</Text>
+                <Text style={styles.subtitle}>Join us on your mental wellness journey</Text>
               </View>
 
-              <View style={styles.inputContainer}>
-                <View style={styles.inputWrapper}>
-                  <Mail size={20} color={Colors.gray500} />
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Email address"
-                    placeholderTextColor={Colors.gray500}
-                    value={formData.email}
-                    onChangeText={(value) => updateFormData('email', value)}
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                  />
+              <View style={styles.form}>
+                <View style={styles.inputContainer}>
+                  <View style={styles.inputWrapper}>
+                    <User size={20} color={Colors.gray500} />
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Full Name"
+                      placeholderTextColor={Colors.gray500}
+                      value={formData.fullName}
+                      onChangeText={(value) => updateFormData('fullName', value)}
+                      autoCapitalize="words"
+                      autoComplete="name"
+                    />
+                  </View>
                 </View>
-              </View>
 
-              <View style={styles.inputContainer}>
-                <View style={styles.inputWrapper}>
-                  <Lock size={20} color={Colors.gray500} />
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Password"
-                    placeholderTextColor={Colors.gray500}
-                    value={formData.password}
-                    onChangeText={(value) => updateFormData('password', value)}
-                    secureTextEntry={!showPassword}
-                  />
-                  <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                    {showPassword ? (
-                      <EyeOff size={20} color={Colors.gray500} />
-                    ) : (
-                      <Eye size={20} color={Colors.gray500} />
-                    )}
-                  </TouchableOpacity>
+                <View style={styles.inputContainer}>
+                  <View style={styles.inputWrapper}>
+                    <Mail size={20} color={Colors.gray500} />
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Email address"
+                      placeholderTextColor={Colors.gray500}
+                      value={formData.email}
+                      onChangeText={(value) => updateFormData('email', value)}
+                      keyboardType="email-address"
+                      autoCapitalize="none"
+                      autoComplete="email"
+                    />
+                  </View>
                 </View>
-              </View>
 
-              <View style={styles.inputContainer}>
-                <View style={styles.inputWrapper}>
-                  <Lock size={20} color={Colors.gray500} />
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Confirm Password"
-                    placeholderTextColor={Colors.gray500}
-                    value={formData.confirmPassword}
-                    onChangeText={(value) => updateFormData('confirmPassword', value)}
-                    secureTextEntry={!showConfirmPassword}
-                  />
-                  <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
-                    {showConfirmPassword ? (
-                      <EyeOff size={20} color={Colors.gray500} />
-                    ) : (
-                      <Eye size={20} color={Colors.gray500} />
-                    )}
-                  </TouchableOpacity>
+                <View style={styles.inputContainer}>
+                  <View style={styles.inputWrapper}>
+                    <Lock size={20} color={Colors.gray500} />
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Password"
+                      placeholderTextColor={Colors.gray500}
+                      value={formData.password}
+                      onChangeText={(value) => updateFormData('password', value)}
+                      secureTextEntry={!showPassword}
+                      autoComplete="new-password"
+                    />
+                    <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                      {showPassword ? (
+                        <EyeOff size={20} color={Colors.gray500} />
+                      ) : (
+                        <Eye size={20} color={Colors.gray500} />
+                      )}
+                    </TouchableOpacity>
+                  </View>
                 </View>
-              </View>
 
-              <TouchableOpacity
-                style={styles.termsContainer}
-                onPress={() => setAgreeToTerms(!agreeToTerms)}
-              >
-                <View style={[styles.checkbox, agreeToTerms && styles.checkedBox]}>
-                  {agreeToTerms && <Text style={styles.checkmark}>✓</Text>}
+                <View style={styles.inputContainer}>
+                  <View style={styles.inputWrapper}>
+                    <Lock size={20} color={Colors.gray500} />
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Confirm Password"
+                      placeholderTextColor={Colors.gray500}
+                      value={formData.confirmPassword}
+                      onChangeText={(value) => updateFormData('confirmPassword', value)}
+                      secureTextEntry={!showConfirmPassword}
+                      autoComplete="new-password"
+                    />
+                    <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
+                      {showConfirmPassword ? (
+                        <EyeOff size={20} color={Colors.gray500} />
+                      ) : (
+                        <Eye size={20} color={Colors.gray500} />
+                      )}
+                    </TouchableOpacity>
+                  </View>
                 </View>
-                <Text style={styles.termsText}>
-                  I agree to the{' '}
-                  <Text style={styles.linkText}>Terms & Conditions</Text>
-                  {' '}and{' '}
-                  <Text style={styles.linkText}>Privacy Policy</Text>
-                </Text>
-              </TouchableOpacity>
 
-              <TouchableOpacity
-                style={[styles.registerButton, isLoading && styles.disabledButton]}
-                onPress={handleRegister}
-                disabled={isLoading}
-              >
-                <Text style={styles.registerButtonText}>
-                  {isLoading ? 'Creating Account...' : 'Create Account'}
-                </Text>
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.footer}>
-              <Text style={styles.footerText}>
-                Already have an account?{' '}
-                <Text
-                  style={styles.signInText}
-                  onPress={() => router.push('/auth/login')}
+                <TouchableOpacity
+                  style={styles.termsContainer}
+                  onPress={() => setAgreeToTerms(!agreeToTerms)}
                 >
-                  Sign In
+                  <View style={[styles.checkbox, agreeToTerms && styles.checkedBox]}>
+                    {agreeToTerms && <Text style={styles.checkmark}>✓</Text>}
+                  </View>
+                  <Text style={styles.termsText}>
+                    I agree to the{' '}
+                    <Text style={styles.linkText}>Terms & Conditions</Text>
+                    {' '}and{' '}
+                    <Text style={styles.linkText}>Privacy Policy</Text>
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.registerButton, isLoading && styles.disabledButton]}
+                  onPress={handleRegister}
+                  disabled={isLoading}
+                >
+                  <LinearGradient
+                    colors={isLoading ? [Colors.gray400, Colors.gray500] : Colors.gradientPurple}
+                    style={styles.buttonGradient}
+                  >
+                    <Text style={styles.registerButtonText}>
+                      {isLoading ? 'Creating Account...' : 'Create Account'}
+                    </Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.footer}>
+                <Text style={styles.footerText}>
+                  Already have an account?{' '}
+                  <Text
+                    style={styles.signInText}
+                    onPress={() => router.push('/auth/login')}
+                  >
+                    Sign In
+                  </Text>
                 </Text>
-              </Text>
+              </View>
             </View>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.white,
+  },
+  safeArea: {
+    flex: 1,
   },
   keyboardView: {
     flex: 1,
@@ -206,6 +252,20 @@ const styles = StyleSheet.create({
   header: {
     alignItems: 'center',
     marginBottom: Spacing.huge,
+  },
+  logoContainer: {
+    marginBottom: Spacing.xl,
+  },
+  logo: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...Shadow.large,
+  },
+  logoText: {
+    fontSize: 40,
   },
   title: {
     ...Typography.title,
@@ -226,11 +286,13 @@ const styles = StyleSheet.create({
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.gray100,
-    borderRadius: BorderRadius.md,
+    backgroundColor: Colors.white,
+    borderRadius: BorderRadius.lg,
     paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.lg,
     ...Shadow.small,
+    borderWidth: 1,
+    borderColor: Colors.gray200,
   },
   input: {
     flex: 1,
@@ -274,11 +336,13 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-Bold',
   },
   registerButton: {
-    backgroundColor: Colors.purple,
-    paddingVertical: Spacing.lg,
-    borderRadius: BorderRadius.md,
-    alignItems: 'center',
+    borderRadius: BorderRadius.lg,
+    overflow: 'hidden',
     ...Shadow.medium,
+  },
+  buttonGradient: {
+    paddingVertical: Spacing.lg,
+    alignItems: 'center',
   },
   disabledButton: {
     opacity: 0.6,

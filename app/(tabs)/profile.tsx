@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,20 +7,98 @@ import {
   TouchableOpacity,
   Switch,
   Alert,
+  TextInput,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { User, Settings, Bell, Shield, CircleHelp as HelpCircle, Info, LogOut, ChevronRight, Award, TrendingUp, Calendar } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { 
+  User, 
+  Settings, 
+  Bell, 
+  Shield, 
+  CircleHelp as HelpCircle, 
+  Info, 
+  LogOut, 
+  ChevronRight, 
+  Award, 
+  TrendingUp, 
+  Calendar,
+  Edit3,
+  Save,
+  X
+} from 'lucide-react-native';
 import { Colors, Typography, Spacing, BorderRadius, Shadow } from '@/constants/theme';
+import { useAuth } from '@/hooks/useAuth';
+import { useMoodData } from '@/hooks/useMoodData';
+import { useJournalData } from '@/hooks/useJournalData';
+import { getProfile, updateProfile } from '@/lib/supabase';
+import { Database } from '@/lib/database.types';
+
+type Profile = Database['public']['Tables']['profiles']['Row'];
 
 export default function ProfileScreen() {
+  const { user, signOut } = useAuth();
+  const { moodStreak, averageMood } = useMoodData();
+  const { totalEntries } = useJournalData();
+  
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedName, setEditedName] = useState('');
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [darkModeEnabled, setDarkModeEnabled] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (user) {
+      loadProfile();
+    }
+  }, [user]);
+
+  const loadProfile = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await getProfile(user.id);
+      if (error) throw error;
+      
+      if (data) {
+        setProfile(data);
+        setEditedName(data.full_name || '');
+      }
+    } catch (error) {
+      console.error('Error loading profile:', error);
+      Alert.alert('Error', 'Failed to load profile');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveProfile = async () => {
+    if (!user || !profile) return;
+    
+    try {
+      const { data, error } = await updateProfile(user.id, {
+        full_name: editedName,
+      });
+      
+      if (error) throw error;
+      
+      if (data) {
+        setProfile(data);
+        setIsEditing(false);
+        Alert.alert('Success', 'Profile updated successfully');
+      }
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      Alert.alert('Error', 'Failed to update profile');
+    }
+  };
 
   const userStats = [
-    { label: 'Days Active', value: '47', icon: Calendar, color: Colors.purple },
-    { label: 'Mood Entries', value: '156', icon: TrendingUp, color: Colors.green },
-    { label: 'Chat Sessions', value: '23', icon: Award, color: Colors.yellow },
+    { label: 'Day Streak', value: moodStreak.toString(), icon: Calendar, color: Colors.purple },
+    { label: 'Avg Mood', value: `${averageMood}%`, icon: TrendingUp, color: Colors.green },
+    { label: 'Journal Entries', value: totalEntries.toString(), icon: Award, color: Colors.blue },
   ];
 
   const menuItems = [
@@ -30,13 +108,6 @@ export default function ProfileScreen() {
       icon: Settings,
       route: '/settings',
       color: Colors.gray600,
-    },
-    {
-      id: 'notifications',
-      title: 'Notifications',
-      icon: Bell,
-      route: '/notifications',
-      color: Colors.purple,
     },
     {
       id: 'privacy',
@@ -70,7 +141,10 @@ export default function ProfileScreen() {
         {
           text: 'Logout',
           style: 'destructive',
-          onPress: () => router.replace('/auth/login'),
+          onPress: async () => {
+            await signOut();
+            router.replace('/auth/login');
+          },
         },
       ]
     );
@@ -82,129 +156,260 @@ export default function ProfileScreen() {
     }
   };
 
-  return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Profile Header */}
-        <View style={styles.profileHeader}>
-          <View style={styles.avatarContainer}>
-            <User size={48} color={Colors.white} />
-          </View>
-          <Text style={styles.userName}>Sarah Johnson</Text>
-          <Text style={styles.userEmail}>sarah.johnson@email.com</Text>
-          <Text style={styles.joinDate}>Member since March 2024</Text>
+  if (!user || loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.centerContainer}>
+          <Text style={styles.loadingText}>Loading profile...</Text>
         </View>
+      </SafeAreaView>
+    );
+  }
 
-        {/* Stats Section */}
-        <View style={styles.statsContainer}>
-          <Text style={styles.sectionTitle}>Your Progress</Text>
-          <View style={styles.statsGrid}>
-            {userStats.map((stat, index) => (
-              <View key={index} style={styles.statCard}>
-                <View style={[styles.statIcon, { backgroundColor: stat.color + '20' }]}>
-                  <stat.icon size={24} color={stat.color} />
+  return (
+    <View style={styles.container}>
+      <LinearGradient
+        colors={['#F8FAFC', '#F1F5F9']}
+        style={StyleSheet.absoluteFill}
+      />
+      
+      <SafeAreaView style={styles.safeArea}>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+          {/* Profile Header */}
+          <View style={styles.profileHeader}>
+            <LinearGradient
+              colors={Colors.gradientPurple}
+              style={styles.avatarContainer}
+            >
+              <User size={48} color={Colors.white} />
+            </LinearGradient>
+            
+            <View style={styles.profileInfo}>
+              {isEditing ? (
+                <View style={styles.editContainer}>
+                  <TextInput
+                    style={styles.nameInput}
+                    value={editedName}
+                    onChangeText={setEditedName}
+                    placeholder="Enter your name"
+                    placeholderTextColor={Colors.gray500}
+                  />
+                  <View style={styles.editActions}>
+                    <TouchableOpacity 
+                      onPress={() => setIsEditing(false)}
+                      style={[styles.editButton, styles.cancelButton]}
+                    >
+                      <X size={16} color={Colors.gray600} />
+                    </TouchableOpacity>
+                    <TouchableOpacity 
+                      onPress={handleSaveProfile}
+                      style={[styles.editButton, styles.saveButton]}
+                    >
+                      <Save size={16} color={Colors.white} />
+                    </TouchableOpacity>
+                  </View>
                 </View>
-                <Text style={styles.statValue}>{stat.value}</Text>
-                <Text style={styles.statLabel}>{stat.label}</Text>
+              ) : (
+                <View style={styles.nameContainer}>
+                  <Text style={styles.userName}>{profile?.full_name || 'User'}</Text>
+                  <TouchableOpacity 
+                    onPress={() => setIsEditing(true)}
+                    style={styles.editIconButton}
+                  >
+                    <Edit3 size={16} color={Colors.gray600} />
+                  </TouchableOpacity>
+                </View>
+              )}
+              
+              <Text style={styles.userEmail}>{profile?.email}</Text>
+              <Text style={styles.joinDate}>
+                Member since {new Date(profile?.created_at || '').toLocaleDateString('en-US', { 
+                  month: 'long', 
+                  year: 'numeric' 
+                })}
+              </Text>
+            </View>
+          </View>
+
+          {/* Stats Section */}
+          <View style={styles.statsContainer}>
+            <Text style={styles.sectionTitle}>Your Progress</Text>
+            <View style={styles.statsGrid}>
+              {userStats.map((stat, index) => (
+                <View key={index} style={styles.statCard}>
+                  <LinearGradient
+                    colors={[stat.color + '15', stat.color + '05']}
+                    style={styles.statIconContainer}
+                  >
+                    <stat.icon size={24} color={stat.color} />
+                  </LinearGradient>
+                  <Text style={styles.statValue}>{stat.value}</Text>
+                  <Text style={styles.statLabel}>{stat.label}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+
+          {/* Quick Settings */}
+          <View style={styles.quickSettings}>
+            <Text style={styles.sectionTitle}>Quick Settings</Text>
+            
+            <View style={styles.settingItem}>
+              <View style={styles.settingLeft}>
+                <View style={[styles.settingIcon, { backgroundColor: Colors.purple + '15' }]}>
+                  <Bell size={20} color={Colors.purple} />
+                </View>
+                <Text style={styles.settingText}>Notifications</Text>
               </View>
+              <Switch
+                value={notificationsEnabled}
+                onValueChange={setNotificationsEnabled}
+                trackColor={{ false: Colors.gray300, true: Colors.purple + '40' }}
+                thumbColor={notificationsEnabled ? Colors.purple : Colors.gray400}
+              />
+            </View>
+
+            <View style={styles.settingItem}>
+              <View style={styles.settingLeft}>
+                <View style={[styles.settingIcon, { backgroundColor: Colors.gray600 + '15' }]}>
+                  <Settings size={20} color={Colors.gray600} />
+                </View>
+                <Text style={styles.settingText}>Dark Mode</Text>
+              </View>
+              <Switch
+                value={darkModeEnabled}
+                onValueChange={setDarkModeEnabled}
+                trackColor={{ false: Colors.gray300, true: Colors.purple + '40' }}
+                thumbColor={darkModeEnabled ? Colors.purple : Colors.gray400}
+              />
+            </View>
+          </View>
+
+          {/* Menu Items */}
+          <View style={styles.menuSection}>
+            <Text style={styles.sectionTitle}>Menu</Text>
+            {menuItems.map((item) => (
+              <TouchableOpacity
+                key={item.id}
+                style={styles.menuItem}
+                onPress={() => handleMenuPress(item.route)}
+              >
+                <View style={styles.menuLeft}>
+                  <View style={[styles.menuIcon, { backgroundColor: item.color + '15' }]}>
+                    <item.icon size={20} color={item.color} />
+                  </View>
+                  <Text style={styles.menuText}>{item.title}</Text>
+                </View>
+                <ChevronRight size={20} color={Colors.gray400} />
+              </TouchableOpacity>
             ))}
           </View>
-        </View>
 
-        {/* Quick Settings */}
-        <View style={styles.quickSettings}>
-          <Text style={styles.sectionTitle}>Quick Settings</Text>
-          
-          <View style={styles.settingItem}>
-            <View style={styles.settingLeft}>
-              <Bell size={20} color={Colors.purple} />
-              <Text style={styles.settingText}>Notifications</Text>
-            </View>
-            <Switch
-              value={notificationsEnabled}
-              onValueChange={setNotificationsEnabled}
-              trackColor={{ false: Colors.gray300, true: Colors.purple + '40' }}
-              thumbColor={notificationsEnabled ? Colors.purple : Colors.gray400}
-            />
-          </View>
-
-          <View style={styles.settingItem}>
-            <View style={styles.settingLeft}>
-              <Settings size={20} color={Colors.gray600} />
-              <Text style={styles.settingText}>Dark Mode</Text>
-            </View>
-            <Switch
-              value={darkModeEnabled}
-              onValueChange={setDarkModeEnabled}
-              trackColor={{ false: Colors.gray300, true: Colors.purple + '40' }}
-              thumbColor={darkModeEnabled ? Colors.purple : Colors.gray400}
-            />
-          </View>
-        </View>
-
-        {/* Menu Items */}
-        <View style={styles.menuSection}>
-          <Text style={styles.sectionTitle}>Menu</Text>
-          {menuItems.map((item) => (
-            <TouchableOpacity
-              key={item.id}
-              style={styles.menuItem}
-              onPress={() => handleMenuPress(item.route)}
+          {/* Logout Button */}
+          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+            <LinearGradient
+              colors={[Colors.error + '15', Colors.error + '05']}
+              style={styles.logoutGradient}
             >
-              <View style={styles.menuLeft}>
-                <View style={[styles.menuIcon, { backgroundColor: item.color + '20' }]}>
-                  <item.icon size={20} color={item.color} />
-                </View>
-                <Text style={styles.menuText}>{item.title}</Text>
-              </View>
-              <ChevronRight size={20} color={Colors.gray400} />
-            </TouchableOpacity>
-          ))}
-        </View>
+              <LogOut size={20} color={Colors.error} />
+              <Text style={styles.logoutText}>Logout</Text>
+            </LinearGradient>
+          </TouchableOpacity>
 
-        {/* Logout Button */}
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <LogOut size={20} color={Colors.error} />
-          <Text style={styles.logoutText}>Logout</Text>
-        </TouchableOpacity>
-
-        {/* Version Info */}
-        <Text style={styles.versionText}>Mediverse v1.0.0</Text>
-      </ScrollView>
-    </SafeAreaView>
+          {/* Version Info */}
+          <Text style={styles.versionText}>Mediverse v1.0.0</Text>
+        </ScrollView>
+      </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.gray100,
+  },
+  safeArea: {
+    flex: 1,
+  },
+  centerContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    ...Typography.paragraph,
+    color: Colors.gray600,
+  },
+  scrollContent: {
+    paddingBottom: 100,
   },
   profileHeader: {
     backgroundColor: Colors.white,
     alignItems: 'center',
     paddingVertical: Spacing.xxl,
     marginBottom: Spacing.lg,
+    ...Shadow.small,
   },
   avatarContainer: {
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: Colors.purple,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: Spacing.lg,
     ...Shadow.medium,
   },
+  profileInfo: {
+    alignItems: 'center',
+  },
+  editContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.md,
+  },
+  nameInput: {
+    ...Typography.subtitle,
+    color: Colors.black,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.purple,
+    paddingVertical: 4,
+    minWidth: 150,
+    textAlign: 'center',
+  },
+  editActions: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+  },
+  editButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  cancelButton: {
+    backgroundColor: Colors.gray200,
+  },
+  saveButton: {
+    backgroundColor: Colors.purple,
+  },
+  nameContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
   userName: {
     ...Typography.subtitle,
     color: Colors.black,
-    marginBottom: Spacing.xs,
+  },
+  editIconButton: {
+    padding: 4,
   },
   userEmail: {
     ...Typography.secondary,
     color: Colors.gray600,
     marginBottom: Spacing.xs,
+    marginTop: Spacing.xs,
   },
   joinDate: {
     ...Typography.small,
@@ -215,7 +420,7 @@ const styles = StyleSheet.create({
     padding: Spacing.lg,
     marginHorizontal: Spacing.lg,
     marginBottom: Spacing.lg,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.lg,
     ...Shadow.small,
   },
   sectionTitle: {
@@ -231,7 +436,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flex: 1,
   },
-  statIcon: {
+  statIconContainer: {
     width: 48,
     height: 48,
     borderRadius: 24,
@@ -255,7 +460,7 @@ const styles = StyleSheet.create({
     padding: Spacing.lg,
     marginHorizontal: Spacing.lg,
     marginBottom: Spacing.lg,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.lg,
     ...Shadow.small,
   },
   settingItem: {
@@ -270,17 +475,24 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+  settingIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: Spacing.md,
+  },
   settingText: {
     ...Typography.paragraph,
     color: Colors.black,
-    marginLeft: Spacing.md,
   },
   menuSection: {
     backgroundColor: Colors.white,
     padding: Spacing.lg,
     marginHorizontal: Spacing.lg,
     marginBottom: Spacing.lg,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.lg,
     ...Shadow.small,
   },
   menuItem: {
@@ -308,20 +520,22 @@ const styles = StyleSheet.create({
     color: Colors.black,
   },
   logoutButton: {
+    marginHorizontal: Spacing.lg,
+    marginBottom: Spacing.lg,
+    borderRadius: BorderRadius.lg,
+    overflow: 'hidden',
+    ...Shadow.small,
+  },
+  logoutGradient: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: Colors.white,
-    marginHorizontal: Spacing.lg,
-    marginBottom: Spacing.lg,
     paddingVertical: Spacing.lg,
-    borderRadius: BorderRadius.md,
-    ...Shadow.small,
+    gap: Spacing.sm,
   },
   logoutText: {
     ...Typography.paragraph,
     color: Colors.error,
-    marginLeft: Spacing.sm,
     fontFamily: 'Inter-Bold',
   },
   versionText: {
