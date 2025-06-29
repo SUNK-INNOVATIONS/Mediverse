@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { ArrowLeft, Plus, Phone, Edit3, Trash2, Shield, AlertTriangle } from 'lucide-react-native';
+import { ArrowLeft, Plus, Phone, CreditCard as Edit3, Trash2, Shield, TriangleAlert as AlertTriangle } from 'lucide-react-native';
 import { Colors, Typography, Spacing, BorderRadius, Shadow } from '@/constants/theme';
 
 interface EmergencyContact {

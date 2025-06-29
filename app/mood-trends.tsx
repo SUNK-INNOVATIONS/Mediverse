@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { ArrowLeft, TrendingUp, Calendar, BarChart3, PieChart } from 'lucide-react-native';
+import { ArrowLeft, TrendingUp, Calendar, ChartBar as BarChart3, ChartPie as PieChart } from 'lucide-react-native';
 import { Colors, Typography, Spacing, BorderRadius, Shadow } from '@/constants/theme';
 
 const { width } = Dimensions.get('window');

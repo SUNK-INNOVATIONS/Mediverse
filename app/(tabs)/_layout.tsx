@@ -1,7 +1,7 @@
 import React from 'react';
 import { Tabs, useRouter, usePathname } from 'expo-router';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { Home, Heart, MessageCircle, User, History, Book } from 'lucide-react-native';
+import { Chrome as Home, Heart, MessageCircle, User, History, Book } from 'lucide-react-native';
 import { Colors } from '@/constants/theme';
 
 // Define tabs and control which ones are shown
