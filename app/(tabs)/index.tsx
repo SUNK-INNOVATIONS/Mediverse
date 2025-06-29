@@ -20,6 +20,7 @@ import {
   Bell,
   Sparkles,
   Target,
+  Plus,
 } from 'lucide-react-native';
 import { Colors, Typography, Spacing, BorderRadius, Shadow } from '@/constants/theme';
 
@@ -27,9 +28,9 @@ export default function HomeScreen() {
   const [currentMood, setCurrentMood] = useState('😊');
   
   const quickActions = [
-    { id: 1, title: 'Track Mood', icon: Heart, color: Colors.pink, route: '/mood' },
+    { id: 1, title: 'Track Mood', icon: Heart, color: Colors.pink, route: '/mood-check-in' },
     { id: 2, title: 'AI Chat', icon: MessageCircle, color: Colors.lavender, route: '/chat' },
-    { id: 3, title: 'Voice Input', icon: Mic, color: Colors.green, route: '/voice' },
+    { id: 3, title: 'Voice Input', icon: Mic, color: Colors.green, route: '/voice-entry' },
     { id: 4, title: 'Journal', icon: BookOpen, color: Colors.yellow, route: '/journal' },
   ];
 
@@ -89,9 +90,10 @@ export default function HomeScreen() {
           <Text style={styles.moodSubtitle}>You're doing great! Keep it up.</Text>
           <TouchableOpacity 
             style={styles.trackMoodButton}
-            onPress={() => router.push('/mood')}
+            onPress={() => router.push('/mood-check-in')}
           >
-            <Text style={styles.trackMoodButtonText}>Track Your Mood</Text>
+            <Plus size={20} color={Colors.white} />
+            <Text style={styles.trackMoodButtonText}>Start Daily Check-in</Text>
           </TouchableOpacity>
         </View>
 
@@ -270,14 +272,17 @@ const styles = StyleSheet.create({
   },
   trackMoodButton: {
     backgroundColor: Colors.lavender,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     paddingVertical: Spacing.md,
     borderRadius: BorderRadius.lg,
-    alignItems: 'center',
   },
   trackMoodButtonText: {
     ...Typography.secondary,
     color: Colors.white,
     fontFamily: 'Poppins-SemiBold',
+    marginLeft: Spacing.sm,
   },
   section: {
     marginBottom: Spacing.xl,

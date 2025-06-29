@@ -81,6 +81,9 @@ export default function RootLayout() {
         <Stack.Screen name="preferences" />
         <Stack.Screen name="auth" />
         <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="mood-check-in" />
+        <Stack.Screen name="journal-prompt" />
+        <Stack.Screen name="voice-entry" />
         <Stack.Screen name="mood-analysis" />
         <Stack.Screen name="toolbox" />
         <Stack.Screen name="breathing" />
@@ -94,6 +97,10 @@ export default function RootLayout() {
         <Stack.Screen name="notifications" />
         <Stack.Screen name="bot-customization" />
         <Stack.Screen name="streaks" />
+        <Stack.Screen name="settings" />
+        <Stack.Screen name="about" />
+        <Stack.Screen name="logout" />
+        <Stack.Screen name="video-agent" />
         <Stack.Screen name="+not-found" />
       </Stack>
       <StatusBar style="dark" />

@@ -7,7 +7,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { ArrowLeft, Brain, Heart, Lightbulb } from 'lucide-react-native';
+import { ArrowLeft, Brain, Heart, Lightbulb, MessageCircle, Wrench } from 'lucide-react-native';
 import Animated, { 
   useSharedValue, 
   useAnimatedStyle, 
@@ -89,8 +89,12 @@ export default function MoodAnalysisScreen() {
     router.push('/toolbox');
   };
 
-  const handleJournalMore = () => {
-    router.push('/(tabs)/journal');
+  const handleChatWithAI = () => {
+    router.push('/(tabs)/chat');
+  };
+
+  const handleViewHistory = () => {
+    router.push('/mood-trends');
   };
 
   return (
@@ -137,13 +141,21 @@ export default function MoodAnalysisScreen() {
 
         {/* Action Buttons */}
         <View style={styles.actionsContainer}>
+          <Text style={styles.actionsTitle}>What would you like to do next?</Text>
+          
           <TouchableOpacity style={styles.primaryButton} onPress={handleGetHelp}>
-            <Heart size={20} color={Colors.white} />
-            <Text style={styles.primaryButtonText}>Let's help with that</Text>
+            <Wrench size={20} color={Colors.white} />
+            <Text style={styles.primaryButtonText}>Get Wellness Tools</Text>
           </TouchableOpacity>
           
-          <TouchableOpacity style={styles.secondaryButton} onPress={handleJournalMore}>
-            <Text style={styles.secondaryButtonText}>Journal more thoughts</Text>
+          <TouchableOpacity style={styles.secondaryButton} onPress={handleChatWithAI}>
+            <MessageCircle size={20} color={Colors.lavender} />
+            <Text style={styles.secondaryButtonText}>Chat with AI Companion</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.secondaryButton} onPress={handleViewHistory}>
+            <Heart size={20} color={Colors.lavender} />
+            <Text style={styles.secondaryButtonText}>View Mood History</Text>
           </TouchableOpacity>
         </View>
 
@@ -263,6 +275,12 @@ const styles = StyleSheet.create({
   actionsContainer: {
     marginBottom: Spacing.xl,
   },
+  actionsTitle: {
+    ...Typography.heading,
+    color: Colors.black,
+    textAlign: 'center',
+    marginBottom: Spacing.lg,
+  },
   primaryButton: {
     backgroundColor: Colors.lavender,
     flexDirection: 'row',
@@ -281,15 +299,19 @@ const styles = StyleSheet.create({
   },
   secondaryButton: {
     backgroundColor: Colors.white,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     paddingVertical: Spacing.lg,
     borderRadius: BorderRadius.xl,
-    alignItems: 'center',
+    marginBottom: Spacing.md,
     borderWidth: 2,
     borderColor: Colors.gray200,
   },
   secondaryButtonText: {
     ...Typography.paragraph,
-    color: Colors.gray700,
+    color: Colors.lavender,
+    marginLeft: Spacing.sm,
     fontFamily: 'Poppins-SemiBold',
   },
   confidenceContainer: {

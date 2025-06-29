@@ -7,7 +7,7 @@ import { Colors } from '@/constants/theme';
 // Define tabs and control which ones are shown
 const TABS = [
   {
-    name: ' ',
+    name: 'index',
     title: 'Home',
     icon: Home,
     show: true,
@@ -51,7 +51,7 @@ function CustomTabBar() {
   return (
     <View style={styles.tabBar}>
       {TABS.filter(tab => tab.show).map((tab) => {
-        const isActive = pathname === `/${tab.name}`;
+        const isActive = pathname === `/${tab.name}` || (tab.name === 'index' && pathname === '/');
         const Icon = tab.icon;
         return (
           <TouchableOpacity
