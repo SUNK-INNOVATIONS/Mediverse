@@ -9,7 +9,8 @@
     "lint": "expo lint"
   },
   "dependencies": {
-    "@expo-google-fonts/inter": "^0.2.3",
+    "@expo-google-fonts/nunito": "^0.2.3",
+    "@expo-google-fonts/poppins": "^0.2.3",
     "@expo/vector-icons": "^14.1.0",
     "@google/generative-ai": "^0.24.1",
     "@lucide/lab": "^0.1.2",

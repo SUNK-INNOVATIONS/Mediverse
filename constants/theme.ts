@@ -1,62 +1,83 @@
 export const Colors = {
-  // Primary Colors
+  // Primary Colors - Updated for Mediverse
   white: '#FFFFFF',
-  black: '#010138',
-  purple: '#4D4DE9',
+  black: '#2D3748',
+  primary: '#6C63FF', // Lavender
+  
+  // Calming palette
+  lavender: '#6C63FF',
+  softMint: '#B8F2E6',
+  pastelBlue: '#AED9E0',
+  lightLavender: '#E6E3FF',
+  warmGray: '#F5F5F5',
   
   // Secondary Colors
-  green: '#BDF6CC',
-  pink: '#F9B9D9',
-  yellow: '#FFDD99',
+  green: '#68D391',
+  pink: '#F687B3',
+  yellow: '#F6E05E',
+  orange: '#FBB6CE',
   
   // Neutrals and Grays
-  gray100: '#F8F9FA',
-  gray200: '#E9ECEF',
-  gray300: '#DEE2E6',
-  gray400: '#CED4DA',
-  gray500: '#ADB5BD',
-  gray600: '#6C757D',
-  gray700: '#495057',
-  gray800: '#343A40',
-  gray900: '#212529',
+  gray50: '#F9FAFB',
+  gray100: '#F7FAFC',
+  gray200: '#EDF2F7',
+  gray300: '#E2E8F0',
+  gray400: '#CBD5E0',
+  gray500: '#A0AEC0',
+  gray600: '#718096',
+  gray700: '#4A5568',
+  gray800: '#2D3748',
+  gray900: '#1A202C',
   
   // Semantic Colors
-  success: '#28A745',
-  warning: '#FFC107',
-  error: '#DC3545',
-  info: '#17A2B8',
+  success: '#48BB78',
+  warning: '#ED8936',
+  error: '#F56565',
+  info: '#4299E1',
 };
 
 export const Typography = {
   title: {
     fontSize: 32,
     fontWeight: 'bold' as const,
-    fontFamily: 'Inter-Bold',
+    fontFamily: 'Poppins-Bold',
+    lineHeight: 40,
   },
   subtitle: {
     fontSize: 24,
-    fontWeight: 'bold' as const,
-    fontFamily: 'Inter-Bold',
+    fontWeight: '600' as const,
+    fontFamily: 'Poppins-SemiBold',
+    lineHeight: 32,
   },
   heading: {
     fontSize: 20,
-    fontWeight: 'bold' as const,
-    fontFamily: 'Inter-Bold',
+    fontWeight: '600' as const,
+    fontFamily: 'Poppins-SemiBold',
+    lineHeight: 28,
   },
   paragraph: {
     fontSize: 16,
-    fontWeight: '500' as const,
-    fontFamily: 'Inter-Medium',
+    fontWeight: '400' as const,
+    fontFamily: 'Nunito-Regular',
+    lineHeight: 24,
   },
   secondary: {
     fontSize: 14,
-    fontWeight: '500' as const,
-    fontFamily: 'Inter-Medium',
+    fontWeight: '400' as const,
+    fontFamily: 'Nunito-Regular',
+    lineHeight: 20,
   },
   small: {
     fontSize: 12,
-    fontWeight: '500' as const,
-    fontFamily: 'Inter-Medium',
+    fontWeight: '400' as const,
+    fontFamily: 'Nunito-Regular',
+    lineHeight: 16,
+  },
+  caption: {
+    fontSize: 10,
+    fontWeight: '400' as const,
+    fontFamily: 'Nunito-Regular',
+    lineHeight: 14,
   },
 };
 
@@ -64,18 +85,21 @@ export const Spacing = {
   xs: 4,
   sm: 8,
   md: 12,
-  lg: 18,
-  xl: 26,
-  xxl: 36,
-  huge: 70,
-  massive: 96,
+  lg: 16,
+  xl: 20,
+  xxl: 24,
+  huge: 32,
+  massive: 48,
 };
 
 export const BorderRadius = {
+  xs: 4,
   sm: 8,
   md: 12,
   lg: 16,
-  xl: 24,
+  xl: 20,
+  xxl: 24,
+  round: 50,
 };
 
 export const Shadow = {

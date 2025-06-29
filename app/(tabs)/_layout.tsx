@@ -12,7 +12,7 @@ const TABS = [
     icon: Home,
     show: true,
   },
-      {
+  {
     name: 'mood',
     title: 'Mood',
     icon: Heart,
@@ -24,12 +24,11 @@ const TABS = [
     icon: MessageCircle,
     show: true,
   },
-
   {
-    name: 'history',
-    title: 'History',
-    icon: History,
-    show: false, // Change to true to show
+    name: 'journal',
+    title: 'Journal',
+    icon: Book,
+    show: true,
   },
   {
     name: 'profile',
@@ -38,16 +37,10 @@ const TABS = [
     show: true,
   },
   {
-    name: 'context',
-    title: 'Context',
-    icon: Heart, // Replace with appropriate icon
-    show: false,
-  },
-  {
-    name: 'journal',
-    title: 'Journal',
-    icon: Book, // Replace with appropriate icon
-    show: true,
+    name: 'history',
+    title: 'History',
+    icon: History,
+    show: false, // Change to true to show
   },
 ];
 
@@ -66,12 +59,12 @@ function CustomTabBar() {
             onPress={() => router.push(('/' + tab.name) as any)}
             style={styles.tabItem}
           >
-            <Icon size={24} color={isActive ? Colors.purple : Colors.gray500} />
+            <Icon size={24} color={isActive ? Colors.lavender : Colors.gray500} />
             <Text
               style={{
-                color: isActive ? Colors.purple : Colors.gray500,
+                color: isActive ? Colors.lavender : Colors.gray500,
                 fontSize: 12,
-                fontFamily: 'Inter-Medium',
+                fontFamily: 'Nunito-Medium',
               }}
             >
               {tab.title}
@@ -110,8 +103,15 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
     paddingTop: 8,
     justifyContent: 'space-around',
+    ...{
+      shadowOffset: { width: 0, height: -2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 8,
+    },
   },
   tabItem: {
     alignItems: 'center',
+    gap: 4,
   },
 });

@@ -4,10 +4,15 @@ import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import {
-  Inter_400Regular,
-  Inter_500Medium,
-  Inter_700Bold,
-} from '@expo-google-fonts/inter';
+  Poppins_400Regular,
+  Poppins_600SemiBold,
+  Poppins_700Bold,
+} from '@expo-google-fonts/poppins';
+import {
+  Nunito_400Regular,
+  Nunito_500Medium,
+  Nunito_600SemiBold,
+} from '@expo-google-fonts/nunito';
 import { useFrameworkReady } from '@/hooks/useFrameworkReady';
 
 // Prevent splash screen from auto-hiding
@@ -17,9 +22,12 @@ export default function RootLayout() {
   useFrameworkReady();
   
   const [fontsLoaded, fontError] = useFonts({
-    'Inter-Regular': Inter_400Regular,
-    'Inter-Medium': Inter_500Medium,
-    'Inter-Bold': Inter_700Bold,
+    'Poppins-Regular': Poppins_400Regular,
+    'Poppins-SemiBold': Poppins_600SemiBold,
+    'Poppins-Bold': Poppins_700Bold,
+    'Nunito-Regular': Nunito_400Regular,
+    'Nunito-Medium': Nunito_500Medium,
+    'Nunito-SemiBold': Nunito_600SemiBold,
   });
 
   const [appIsReady, setAppIsReady] = useState(false);
@@ -68,16 +76,24 @@ export default function RootLayout() {
   return (
     <>
       <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="splash" />
+        <Stack.Screen name="welcome" />
         <Stack.Screen name="onboarding" />
+        <Stack.Screen name="preferences" />
         <Stack.Screen name="auth" />
         <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="journal" />
-        <Stack.Screen name="voice" />
-        <Stack.Screen name="suggestions" />
-        <Stack.Screen name="crisis" />
-        <Stack.Screen name="settings" />
-        <Stack.Screen name="about" />
+        <Stack.Screen name="mood-analysis" />
+        <Stack.Screen name="toolbox" />
+        <Stack.Screen name="breathing" />
+        <Stack.Screen name="mindfulness" />
+        <Stack.Screen name="music-player" />
+        <Stack.Screen name="affirmations" />
+        <Stack.Screen name="mood-trends" />
+        <Stack.Screen name="crisis-support" />
+        <Stack.Screen name="emergency-contacts" />
+        <Stack.Screen name="subscription" />
+        <Stack.Screen name="notifications" />
+        <Stack.Screen name="bot-customization" />
+        <Stack.Screen name="streaks" />
         <Stack.Screen name="+not-found" />
       </Stack>
       <StatusBar style="dark" />
