@@ -41,6 +41,8 @@ export default function BreathingScreen() {
   const scaleValue = useSharedValue(1);
   const opacityValue = useSharedValue(0.7);
   const gradientOpacity = useSharedValue(0.3);
+  const controlsScale = useSharedValue(1);
+  const controlsOpacity = useSharedValue(1);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const phaseTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -53,11 +55,21 @@ export default function BreathingScreen() {
     opacity: gradientOpacity.value,
   }));
 
+  const controlsAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: controlsScale.value }],
+    opacity: controlsOpacity.value,
+  }));
+
   const startBreathingCycle = () => {
     if (isActive) return;
     
     setIsActive(true);
     setCycleCount(0);
+    
+    // Minimize controls when breathing starts
+    controlsScale.value = withTiming(0.7, { duration: 800 });
+    controlsOpacity.value = withTiming(0.6, { duration: 800 });
+    
     runBreathingPhase(BREATHING_PHASES.INHALE);
   };
 
@@ -69,6 +81,11 @@ export default function BreathingScreen() {
     scaleValue.value = withTiming(1, { duration: 500 });
     opacityValue.value = withTiming(0.7, { duration: 500 });
     gradientOpacity.value = withTiming(0.3, { duration: 500 });
+    
+    // Restore controls when breathing stops
+    controlsScale.value = withTiming(1, { duration: 800 });
+    controlsOpacity.value = withTiming(1, { duration: 800 });
+    
     setCurrentPhase(BREATHING_PHASES.INHALE);
     setTimeRemaining(0);
   };
@@ -200,12 +217,15 @@ export default function BreathingScreen() {
         </View>
 
         <View style={styles.content}>
-          <View style={styles.infoCard}>
-            <Text style={styles.techniqueTitle}>4-7-8 Breathing Technique</Text>
-            <Text style={styles.techniqueDescription}>
-              This technique helps reduce anxiety and promote relaxation by regulating your nervous system
-            </Text>
-          </View>
+          {/* Info Card - Hide during active breathing */}
+          {!isActive && (
+            <View style={styles.infoCard}>
+              <Text style={styles.techniqueTitle}>4-7-8 Breathing Technique</Text>
+              <Text style={styles.techniqueDescription}>
+                This technique helps reduce anxiety and promote relaxation by regulating your nervous system
+              </Text>
+            </View>
+          )}
 
           <View style={styles.breathingContainer}>
             <Animated.View 
@@ -226,7 +246,8 @@ export default function BreathingScreen() {
             <Text style={styles.instructionText}>{getInstructions()}</Text>
           </View>
 
-          <View style={styles.statsContainer}>
+          {/* Stats Container - Minimize during breathing */}
+          <Animated.View style={[styles.statsContainer, controlsAnimatedStyle]}>
             <View style={styles.statItem}>
               <Text style={styles.statNumber}>{cycleCount}</Text>
               <Text style={styles.statLabel}>Cycles</Text>
@@ -236,9 +257,10 @@ export default function BreathingScreen() {
               <Text style={styles.statNumber}>{Math.ceil(cycleCount * 0.5)}</Text>
               <Text style={styles.statLabel}>Minutes</Text>
             </View>
-          </View>
+          </Animated.View>
 
-          <View style={styles.controlsContainer}>
+          {/* Controls Container - Minimize during breathing */}
+          <Animated.View style={[styles.controlsContainer, controlsAnimatedStyle]}>
             {!isActive ? (
               <TouchableOpacity style={styles.playButton} onPress={startBreathingCycle}>
                 <Play size={24} color={Colors.white} />
@@ -246,26 +268,29 @@ export default function BreathingScreen() {
               </TouchableOpacity>
             ) : (
               <TouchableOpacity style={styles.pauseButton} onPress={stopBreathing}>
-                <Pause size={24} color={Colors.white} />
+                <Pause size={20} color={Colors.white} />
                 <Text style={styles.pauseButtonText}>Pause</Text>
               </TouchableOpacity>
             )}
 
             <TouchableOpacity style={styles.resetButton} onPress={resetBreathing}>
-              <RotateCcw size={20} color={Colors.gray600} />
+              <RotateCcw size={16} color={Colors.gray600} />
               <Text style={styles.resetButtonText}>Reset</Text>
             </TouchableOpacity>
-          </View>
+          </Animated.View>
 
-          <View style={styles.tipCard}>
-            <Text style={styles.tipTitle}>💡 Breathing Tips</Text>
-            <Text style={styles.tipText}>
-              • Find a comfortable position{'\n'}
-              • Focus on the circle's movement{'\n'}
-              • Don't force your breath{'\n'}
-              • Practice regularly for best results
-            </Text>
-          </View>
+          {/* Tips Card - Hide during active breathing */}
+          {!isActive && (
+            <View style={styles.tipCard}>
+              <Text style={styles.tipTitle}>💡 Breathing Tips</Text>
+              <Text style={styles.tipText}>
+                • Find a comfortable position{'\n'}
+                • Focus on the circle's movement{'\n'}
+                • Don't force your breath{'\n'}
+                • Practice regularly for best results
+              </Text>
+            </View>
+          )}
         </View>
       </SafeAreaView>
     </View>
@@ -319,6 +344,8 @@ const styles = StyleSheet.create({
   breathingContainer: {
     alignItems: 'center',
     marginBottom: Spacing.xl,
+    flex: 1,
+    justifyContent: 'center',
   },
   breathingCircle: {
     width: 200,
@@ -363,8 +390,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
     borderRadius: BorderRadius.lg,
-    padding: Spacing.lg,
-    marginBottom: Spacing.xl,
+    padding: Spacing.md,
+    marginBottom: Spacing.lg,
     ...Shadow.small,
   },
   statItem: {
@@ -372,7 +399,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   statNumber: {
-    ...Typography.title,
+    ...Typography.heading,
     color: Colors.lavender,
     fontFamily: 'Poppins-Bold',
   },
@@ -383,10 +410,10 @@ const styles = StyleSheet.create({
   statDivider: {
     width: 1,
     backgroundColor: Colors.gray200,
-    marginHorizontal: Spacing.lg,
+    marginHorizontal: Spacing.md,
   },
   controlsContainer: {
-    marginBottom: Spacing.xl,
+    marginBottom: Spacing.lg,
   },
   playButton: {
     backgroundColor: Colors.lavender,
@@ -409,13 +436,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: Spacing.lg,
-    borderRadius: BorderRadius.xl,
-    marginBottom: Spacing.md,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    marginBottom: Spacing.sm,
     ...Shadow.medium,
   },
   pauseButtonText: {
-    ...Typography.paragraph,
+    ...Typography.secondary,
     color: Colors.white,
     marginLeft: Spacing.sm,
     fontFamily: 'Poppins-SemiBold',
@@ -425,13 +452,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: Spacing.md,
-    borderRadius: BorderRadius.xl,
-    borderWidth: 2,
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
     borderColor: Colors.gray200,
   },
   resetButtonText: {
-    ...Typography.secondary,
+    ...Typography.small,
     color: Colors.gray600,
     marginLeft: Spacing.sm,
     fontFamily: 'Poppins-SemiBold',
