@@ -10,6 +10,7 @@ import {
   Inter_700Bold,
 } from '@expo-google-fonts/inter';
 import { useFrameworkReady } from '@/hooks/useFrameworkReady';
+import { useRouter } from 'expo-router';
 
 // Prevent splash screen from auto-hiding
 SplashScreen.preventAutoHideAsync();
@@ -19,6 +20,10 @@ if (Constants.expoConfig?.extra?.eas?.env) {
   process.env.NEXT_PUBLIC_SUPABASE_URL = Constants.expoConfig.extra.eas.env.NEXT_PUBLIC_SUPABASE_URL;
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = Constants.expoConfig.extra.eas.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 }
+
+const isAuthenticated = async () => {
+  return false;
+};
 
 export default function RootLayout() {
   useFrameworkReady();
@@ -30,6 +35,7 @@ export default function RootLayout() {
   });
 
   const [appIsReady, setAppIsReady] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     async function prepare() {
@@ -54,6 +60,17 @@ export default function RootLayout() {
     }
   }, [appIsReady, fontsLoaded, fontError]);
 
+  useEffect(() => {
+    const checkAuth = async () => {
+      const authenticated = await isAuthenticated();
+      if (!authenticated) {
+        router.replace('/app/auth/login');
+      }
+    };
+
+    checkAuth();
+  }, [router]);
+
   if (!appIsReady || (!fontsLoaded && !fontError)) {
     return null;
   }
@@ -63,6 +80,8 @@ export default function RootLayout() {
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="splash" />
         <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="signin" />
+        <Stack.Screen name="register" />
         <Stack.Screen name="onboarding" />
         <Stack.Screen name="auth" />
         <Stack.Screen name="journal" />
