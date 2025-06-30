@@ -125,7 +125,7 @@ export default function HomeScreen() {
             </TouchableOpacity>
           </View>
           
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ paddingBottom: Spacing.xl }}>
             {suggestions.map((suggestion) => (
               <TouchableOpacity 
                 key={suggestion.id} 
@@ -201,9 +201,12 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
+  paddding_xl: {
+    paddingHorizontal: Spacing.xl,
+  },
   container: {
     flex: 1,
-    backgroundColor: Colors.warmGray,
+    backgroundColor: Colors.white,
   },
   scrollView: {
     flex: 1,
@@ -285,7 +288,8 @@ const styles = StyleSheet.create({
     marginLeft: Spacing.sm,
   },
   section: {
-    marginBottom: Spacing.xl,
+    marginBottom: Spacing.xxl,
+    paddingTop: Spacing.lg,
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -316,7 +320,7 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.xl,
     padding: Spacing.lg,
     alignItems: 'center',
-    ...Shadow.small,
+    // ...Shadow.small,
   },
   actionIconContainer: {
     width: 48,

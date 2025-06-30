@@ -1,4 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+// File: BreathingScreen.tsx
+
+import { useEffect, useRef, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -8,12 +10,12 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { ArrowLeft, Play, Pause, RotateCcw } from 'lucide-react-native';
-import Animated, { 
-  useSharedValue, 
-  useAnimatedStyle, 
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
   withTiming,
   withSequence,
-  Easing
+  Easing,
 } from 'react-native-reanimated';
 import { Colors, Typography, Spacing, BorderRadius, Shadow } from '@/constants/theme';
 import RandomGradient from '@/components/RandomGradient';
@@ -22,72 +24,129 @@ const BREATHING_PHASES = {
   INHALE: 'Breathe In',
   HOLD: 'Hold',
   EXHALE: 'Breathe Out',
-  PAUSE: 'Pause'
+  PAUSE: 'Pause',
 };
 
+const PHASE_ORDER = [
+  BREATHING_PHASES.INHALE,
+  BREATHING_PHASES.HOLD,
+  BREATHING_PHASES.EXHALE,
+  BREATHING_PHASES.PAUSE,
+];
+
 const PHASE_DURATIONS = {
-  INHALE: 4000,
-  HOLD: 7000,
-  EXHALE: 8000,
-  PAUSE: 1000
+  [BREATHING_PHASES.INHALE]: 4,
+  [BREATHING_PHASES.HOLD]: 7,
+  [BREATHING_PHASES.EXHALE]: 8,
+  [BREATHING_PHASES.PAUSE]: 1,
 };
 
 export default function BreathingScreen() {
   const [isActive, setIsActive] = useState(false);
   const [currentPhase, setCurrentPhase] = useState(BREATHING_PHASES.INHALE);
   const [cycleCount, setCycleCount] = useState(0);
-  const [timeRemaining, setTimeRemaining] = useState(0);
+  const [timeRemaining, setTimeRemaining] = useState(PHASE_DURATIONS[BREATHING_PHASES.INHALE]);
 
   const scaleValue = useSharedValue(1);
   const opacityValue = useSharedValue(0.7);
   const gradientOpacity = useSharedValue(0.3);
   const controlsScale = useSharedValue(1);
   const controlsOpacity = useSharedValue(1);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const phaseTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scaleValue.value }],
-    opacity: opacityValue.value,
-  }));
+  const countdownTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const phaseTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const gradientAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: gradientOpacity.value,
-  }));
+  const animatePhase = (phase: string, durationMs: number) => {
+    switch (phase) {
+      case BREATHING_PHASES.INHALE:
+        scaleValue.value = withTiming(1.4, { duration: durationMs, easing: Easing.inOut(Easing.ease) });
+        opacityValue.value = withTiming(1, { duration: durationMs });
+        gradientOpacity.value = withTiming(0.8, { duration: durationMs });
+        break;
+      case BREATHING_PHASES.HOLD:
+        gradientOpacity.value = withSequence(
+          withTiming(0.6, { duration: durationMs / 2 }),
+          withTiming(0.8, { duration: durationMs / 2 }),
+        );
+        break;
+      case BREATHING_PHASES.EXHALE:
+        scaleValue.value = withTiming(1, { duration: durationMs, easing: Easing.inOut(Easing.ease) });
+        opacityValue.value = withTiming(0.7, { duration: durationMs });
+        gradientOpacity.value = withTiming(0.4, { duration: durationMs });
+        break;
+      case BREATHING_PHASES.PAUSE:
+        gradientOpacity.value = withTiming(0.3, { duration: durationMs });
+        break;
+    }
+  };
 
-  const controlsAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: controlsScale.value }],
-    opacity: controlsOpacity.value,
-  }));
+  const startCountdown = useCallback((duration: number) => {
+    setTimeRemaining(duration);
+    if (countdownTimerRef.current) clearTimeout(countdownTimerRef.current);
+
+    const tick = (time: number) => {
+      if (time > 0) {
+        countdownTimerRef.current = setTimeout(() => {
+          setTimeRemaining(t => t - 1);
+          tick(time - 1);
+        }, 1000);
+      }
+    };
+
+    tick(duration);
+  }, []);
+
+  const runNextPhase = useCallback((current: string) => {
+    const nextIndex = (PHASE_ORDER.indexOf(current) + 1) % PHASE_ORDER.length;
+    const nextPhase = PHASE_ORDER[nextIndex];
+
+    if (nextPhase === BREATHING_PHASES.INHALE) {
+      setCycleCount(prev => prev + 1);
+    }
+
+    runPhase(nextPhase);
+  }, []);
+
+  const runPhase = useCallback((phase: string) => {
+    if (!isActive) return;
+
+    setCurrentPhase(phase);
+    const duration = PHASE_DURATIONS[phase];
+    const durationMs = duration * 1000;
+
+    startCountdown(duration);
+    animatePhase(phase, durationMs);
+
+    if (phaseTimerRef.current) clearTimeout(phaseTimerRef.current);
+    phaseTimerRef.current = setTimeout(() => {
+      runNextPhase(phase);
+    }, durationMs);
+  }, [isActive, startCountdown, runNextPhase]);
 
   const startBreathingCycle = () => {
     if (isActive) return;
-    
+
     setIsActive(true);
     setCycleCount(0);
-    
-    // Minimize controls when breathing starts
     controlsScale.value = withTiming(0.7, { duration: 800 });
     controlsOpacity.value = withTiming(0.6, { duration: 800 });
-    
-    runBreathingPhase(BREATHING_PHASES.INHALE);
+
+    runPhase(BREATHING_PHASES.INHALE);
   };
 
   const stopBreathing = () => {
     setIsActive(false);
-    if (intervalRef.current) clearInterval(intervalRef.current);
-    if (phaseTimeoutRef.current) clearTimeout(phaseTimeoutRef.current);
-    
+    clearTimeout(countdownTimerRef.current!);
+    clearTimeout(phaseTimerRef.current!);
+
+    setTimeRemaining(0);
+    setCurrentPhase(BREATHING_PHASES.INHALE);
+
     scaleValue.value = withTiming(1, { duration: 500 });
     opacityValue.value = withTiming(0.7, { duration: 500 });
     gradientOpacity.value = withTiming(0.3, { duration: 500 });
-    
-    // Restore controls when breathing stops
     controlsScale.value = withTiming(1, { duration: 800 });
     controlsOpacity.value = withTiming(1, { duration: 800 });
-    
-    setCurrentPhase(BREATHING_PHASES.INHALE);
-    setTimeRemaining(0);
   };
 
   const resetBreathing = () => {
@@ -95,78 +154,10 @@ export default function BreathingScreen() {
     setCycleCount(0);
   };
 
-  const runBreathingPhase = (phase: string) => {
-    setCurrentPhase(phase);
-    const duration = PHASE_DURATIONS[phase as keyof typeof PHASE_DURATIONS];
-    setTimeRemaining(Math.ceil(duration / 1000));
-
-    // Start countdown
-    const countdown = setInterval(() => {
-      setTimeRemaining(prev => {
-        if (prev <= 1) {
-          clearInterval(countdown);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    // Animate based on phase
-    switch (phase) {
-      case BREATHING_PHASES.INHALE:
-        scaleValue.value = withTiming(1.4, { 
-          duration: duration, 
-          easing: Easing.inOut(Easing.ease) 
-        });
-        opacityValue.value = withTiming(1, { duration: duration });
-        gradientOpacity.value = withTiming(0.8, { duration: duration });
-        break;
-      case BREATHING_PHASES.HOLD:
-        // Keep current scale and add gentle pulsing to gradient
-        gradientOpacity.value = withSequence(
-          withTiming(0.6, { duration: duration / 2 }),
-          withTiming(0.8, { duration: duration / 2 })
-        );
-        break;
-      case BREATHING_PHASES.EXHALE:
-        scaleValue.value = withTiming(1, { 
-          duration: duration, 
-          easing: Easing.inOut(Easing.ease) 
-        });
-        opacityValue.value = withTiming(0.7, { duration: duration });
-        gradientOpacity.value = withTiming(0.4, { duration: duration });
-        break;
-      case BREATHING_PHASES.PAUSE:
-        gradientOpacity.value = withTiming(0.3, { duration: duration });
-        break;
-    }
-
-    // Move to next phase
-    phaseTimeoutRef.current = setTimeout(() => {
-      if (!isActive) return;
-
-      switch (phase) {
-        case BREATHING_PHASES.INHALE:
-          runBreathingPhase(BREATHING_PHASES.HOLD);
-          break;
-        case BREATHING_PHASES.HOLD:
-          runBreathingPhase(BREATHING_PHASES.EXHALE);
-          break;
-        case BREATHING_PHASES.EXHALE:
-          runBreathingPhase(BREATHING_PHASES.PAUSE);
-          break;
-        case BREATHING_PHASES.PAUSE:
-          setCycleCount(prev => prev + 1);
-          runBreathingPhase(BREATHING_PHASES.INHALE);
-          break;
-      }
-    }, duration);
-  };
-
   useEffect(() => {
     return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-      if (phaseTimeoutRef.current) clearTimeout(phaseTimeoutRef.current);
+      if (countdownTimerRef.current) clearTimeout(countdownTimerRef.current);
+      if (phaseTimerRef.current) clearTimeout(phaseTimerRef.current);
     };
   }, []);
 
@@ -200,9 +191,22 @@ export default function BreathingScreen() {
     }
   };
 
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scaleValue.value }],
+    opacity: opacityValue.value,
+  }));
+
+  const gradientAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: gradientOpacity.value,
+  }));
+
+  const controlsAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: controlsScale.value }],
+    opacity: controlsOpacity.value,
+  }));
+
   return (
     <View style={styles.container}>
-      {/* Animated Mesh Gradient Background */}
       <Animated.View style={[StyleSheet.absoluteFill, gradientAnimatedStyle]}>
         <RandomGradient />
       </Animated.View>
@@ -217,7 +221,6 @@ export default function BreathingScreen() {
         </View>
 
         <View style={styles.content}>
-          {/* Info Card - Hide during active breathing */}
           {!isActive && (
             <View style={styles.infoCard}>
               <Text style={styles.techniqueTitle}>4-7-8 Breathing Technique</Text>
@@ -228,13 +231,11 @@ export default function BreathingScreen() {
           )}
 
           <View style={styles.breathingContainer}>
-            <Animated.View 
-              style={[
-                styles.breathingCircle, 
-                { backgroundColor: getPhaseColor() + '40' },
-                animatedStyle
-              ]}
-            >
+            <Animated.View style={[
+              styles.breathingCircle,
+              { backgroundColor: getPhaseColor() + '40' },
+              animatedStyle
+            ]}>
               <View style={[styles.innerCircle, { backgroundColor: getPhaseColor() }]}>
                 {timeRemaining > 0 && (
                   <Text style={styles.countdownText}>{timeRemaining}</Text>
@@ -246,7 +247,6 @@ export default function BreathingScreen() {
             <Text style={styles.instructionText}>{getInstructions()}</Text>
           </View>
 
-          {/* Stats Container - Minimize during breathing */}
           <Animated.View style={[styles.statsContainer, controlsAnimatedStyle]}>
             <View style={styles.statItem}>
               <Text style={styles.statNumber}>{cycleCount}</Text>
@@ -254,12 +254,13 @@ export default function BreathingScreen() {
             </View>
             <View style={styles.statDivider} />
             <View style={styles.statItem}>
-              <Text style={styles.statNumber}>{Math.ceil(cycleCount * 0.5)}</Text>
-              <Text style={styles.statLabel}>Minutes</Text>
+              <Text style={styles.statNumber}>
+                {cycleCount * Object.values(PHASE_DURATIONS).reduce((a, b) => a + b, 0)}
+              </Text>
+              <Text style={styles.statLabel}>Seconds</Text>
             </View>
           </Animated.View>
 
-          {/* Controls Container - Minimize during breathing */}
           <Animated.View style={[styles.controlsContainer, controlsAnimatedStyle]}>
             {!isActive ? (
               <TouchableOpacity style={styles.playButton} onPress={startBreathingCycle}>
@@ -279,7 +280,6 @@ export default function BreathingScreen() {
             </TouchableOpacity>
           </Animated.View>
 
-          {/* Tips Card - Hide during active breathing */}
           {!isActive && (
             <View style={styles.tipCard}>
               <Text style={styles.tipTitle}>💡 Breathing Tips</Text>
@@ -296,6 +296,7 @@ export default function BreathingScreen() {
     </View>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {

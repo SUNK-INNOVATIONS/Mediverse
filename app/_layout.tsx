@@ -1,109 +1,80 @@
-import { useEffect, useState, useRef } from 'react';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import { useFonts } from 'expo-font';
-import * as SplashScreen from 'expo-splash-screen';
-import {
-  Poppins_400Regular,
-  Poppins_600SemiBold,
-  Poppins_700Bold,
-} from '@expo-google-fonts/poppins';
-import {
-  Nunito_400Regular,
-  Nunito_500Medium,
-  Nunito_600SemiBold,
-} from '@expo-google-fonts/nunito';
-import { useFrameworkReady } from '@/hooks/useFrameworkReady';
+import React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createDrawerNavigator } from '@react-navigation/drawer';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+const Stack = createNativeStackNavigator();
+import { Text } from 'react-native';
+import Splash from './splash';
+import Onboarding from './onboarding';
+import AuthLayout from './auth/_layout';
+import Welcome from './welcome';
+import Affirmations from './affirmations';
+import Breathing from './breathing';
+import Mindfulness from './mindfulness';
+import Journal from './journal';
+import MoodCheckIn from './mood-check-in';
+import MusicPlayer from './music-player';
+import Notifications from './notifications';
+import EmergencyContacts from './emergency-contacts';
+import BotCustomization from './bot-customization';
+import Crisis from './crisis';
+import Streaks from './streaks';
+import Subscription from './subscription';
+import Preferences from './preferences';
+import Settings from './settings';
+import Toolbox from './toolbox';
+import VideoAgent from './video-agent';
+import VoiceEntry from './voice-entry';
+import Logout from './logout';
+import JournalPrompt from './journal-prompt';
+import MoodAnalysis from './mood-analysis';
+import MoodTrends from './mood-trends';
+import Voice from './voice';
 
-// Prevent splash screen from auto-hiding
-SplashScreen.preventAutoHideAsync();
+const Drawer = createDrawerNavigator();
 
 export default function RootLayout() {
-  useFrameworkReady();
-  
-  const [fontsLoaded, fontError] = useFonts({
-    'Poppins-Regular': Poppins_400Regular,
-    'Poppins-SemiBold': Poppins_600SemiBold,
-    'Poppins-Bold': Poppins_700Bold,
-    'Nunito-Regular': Nunito_400Regular,
-    'Nunito-Medium': Nunito_500Medium,
-    'Nunito-SemiBold': Nunito_600SemiBold,
-  });
-
-  const [appIsReady, setAppIsReady] = useState(false);
-  const mounted = useRef(true);
-
-  // Track component mount status
-  useEffect(() => {
-    mounted.current = true;
-    return () => {
-      mounted.current = false;
-    };
-  }, []);
-
-  useEffect(() => {
-    async function prepare() {
-      try {
-        // Ensure splash screen stays visible
-        await SplashScreen.preventAutoHideAsync();
-        // Artificial delay for splash screen
-        await new Promise(resolve => setTimeout(resolve, 2000));
-      } catch (e) {
-        console.warn(e);
-      } finally {
-        // Only update state if component is still mounted
-        if (mounted.current) {
-          setAppIsReady(true);
-        }
-      }
-    }
-
-    if (fontsLoaded || fontError) {
-      prepare();
-    }
-  }, [fontsLoaded, fontError]);
-
-  useEffect(() => {
-    if (appIsReady && (fontsLoaded || fontError)) {
-      SplashScreen.hideAsync();
-    }
-  }, [appIsReady, fontsLoaded, fontError]);
-
-  if (!appIsReady || (!fontsLoaded && !fontError)) {
-    return null;
-  }
-
   return (
-    <>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="welcome" />
-        <Stack.Screen name="onboarding" />
-        <Stack.Screen name="preferences" />
-        <Stack.Screen name="auth" />
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="mood-check-in" />
-        <Stack.Screen name="journal-prompt" />
-        <Stack.Screen name="voice-entry" />
-        <Stack.Screen name="mood-analysis" />
-        <Stack.Screen name="toolbox" />
-        <Stack.Screen name="breathing" />
-        <Stack.Screen name="mindfulness" />
-        <Stack.Screen name="music-player" />
-        <Stack.Screen name="affirmations" />
-        <Stack.Screen name="mood-trends" />
-        <Stack.Screen name="crisis-support" />
-        <Stack.Screen name="emergency-contacts" />
-        <Stack.Screen name="subscription" />
-        <Stack.Screen name="notifications" />
-        <Stack.Screen name="bot-customization" />
-        <Stack.Screen name="streaks" />
-        <Stack.Screen name="settings" />
-        <Stack.Screen name="about" />
-        <Stack.Screen name="logout" />
-        <Stack.Screen name="video-agent" />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-      <StatusBar style="dark" />
-    </>
+    <NavigationContainer>
+<Drawer.Navigator initialRouteName="MainTabs">
+        <Drawer.Screen name="MainTabs" component={MainStackNavigator} options={{ headerShown: false }} />
+        <Drawer.Screen name="Affirmations" component={Affirmations} />
+        <Drawer.Screen name="Breathing" component={Breathing} />
+        <Drawer.Screen name="Mindfulness" component={Mindfulness} />
+        <Drawer.Screen name="Journal" component={Journal} />
+        <Drawer.Screen name="JournalPrompt" component={JournalPrompt} />
+        <Drawer.Screen name="MoodCheckIn" component={MoodCheckIn} />
+        <Drawer.Screen name="MoodAnalysis" component={MoodAnalysis} />
+        <Drawer.Screen name="MoodTrends" component={MoodTrends} />
+        <Drawer.Screen name="MusicPlayer" component={MusicPlayer} />
+        <Drawer.Screen name="Notifications" component={Notifications} />
+        <Drawer.Screen name="EmergencyContacts" component={EmergencyContacts} />
+        <Drawer.Screen name="BotCustomization" component={BotCustomization} />
+        <Drawer.Screen name="Crisis" component={Crisis} />
+        <Drawer.Screen name="Streaks" component={Streaks} />
+        <Drawer.Screen name="Subscription" component={Subscription} />
+        <Drawer.Screen name="Preferences" component={Preferences} />
+        <Drawer.Screen name="Settings" component={Settings} />
+        <Drawer.Screen name="Toolbox" component={Toolbox} />
+        <Drawer.Screen name="VideoAgent" component={VideoAgent} />
+        <Drawer.Screen name="VoiceEntry" component={VoiceEntry} />
+        <Drawer.Screen name="Voice" component={Voice} />
+        <Drawer.Screen name="Logout" component={Logout} />
+      </Drawer.Navigator>
+    </NavigationContainer>
+  );
+}
+
+import TabsLayout from './(tabs)/_layout';
+
+function MainStackNavigator() {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen name="Splash" component={Splash} options={{ headerShown: false }} />
+      <Stack.Screen name="Onboarding" component={Onboarding} options={{ headerShown: false }} />
+      <Stack.Screen name="Auth" component={AuthLayout} options={{ headerShown: false }} />
+      <Stack.Screen name="Welcome" component={Welcome} options={{ headerShown: false }} />
+      <Stack.Screen name="MainTabs" component={TabsLayout} options={{ headerShown: false }} />
+    </Stack.Navigator>
   );
 }
