@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { supabase } from '../../supabase';
 import {
   View,
   Text,
@@ -27,12 +28,23 @@ export default function LoginScreen() {
     }
 
     setIsLoading(true);
-    
-    // Simulate login process
-    setTimeout(() => {
+
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        Alert.alert('Error', error.message);
+      } else {
+        router.replace('/(tabs)');
+      }
+    } catch (error: any) {
+      Alert.alert('Error', error.message);
+    } finally {
       setIsLoading(false);
-      router.replace('/(tabs)');
-    }, 1500);
+    }
   };
 
   const handleSocialLogin = (provider: string) => {
