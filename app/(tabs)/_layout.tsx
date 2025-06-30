@@ -24,7 +24,12 @@ const TABS = [
     icon: MessageCircle,
     show: true,
   },
-
+  {
+    name: 'journal',
+    title: 'Journal',
+    icon: Book, // Replace with appropriate icon
+    show: true,
+  },
   {
     name: 'history',
     title: 'History',
@@ -43,12 +48,7 @@ const TABS = [
     icon: Heart, // Replace with appropriate icon
     show: false,
   },
-  {
-    name: 'journal',
-    title: 'Journal',
-    icon: Book, // Replace with appropriate icon
-    show: true,
-  },
+
 ];
 
 function CustomTabBar() {
