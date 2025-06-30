@@ -18,11 +18,11 @@ const handleSelectActivity = (id: string) => {
     case 'breathing':
       router.push('/(tabs)/breathingexcercise'); // ← your breathing exercise route
       break;
-    // case 'music':
-    //   router.push('/(tabs)/music');
+    case 'music':
+      router.push('/(tabs)/music-player');
     //   break;
-    // case 'journal':
-    //   router.push('/(tabs)/journal');
+    case 'journal':
+      router.push('/journal');
       break;
     case 'chat':
       router.push('/(tabs)/chat');

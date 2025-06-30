@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import Constants from 'expo-constants';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import {
@@ -12,6 +13,12 @@ import { useFrameworkReady } from '@/hooks/useFrameworkReady';
 
 // Prevent splash screen from auto-hiding
 SplashScreen.preventAutoHideAsync();
+
+// Load environment variables from app.json
+if (Constants.expoConfig?.extra?.eas?.env) {
+  process.env.NEXT_PUBLIC_SUPABASE_URL = Constants.expoConfig.extra.eas.env.NEXT_PUBLIC_SUPABASE_URL;
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = Constants.expoConfig.extra.eas.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+}
 
 export default function RootLayout() {
   useFrameworkReady();
