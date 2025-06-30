@@ -36,8 +36,6 @@ export default function RootLayout() {
       try {
         // Keep splash screen visible while we fetch resources
         await SplashScreen.preventAutoHideAsync();
-        // Artificial delay for splash screen
-        await new Promise(resolve => setTimeout(resolve, 2000));
       } catch (e) {
         console.warn(e);
       } finally {
@@ -64,9 +62,9 @@ export default function RootLayout() {
     <>
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="splash" />
+        <Stack.Screen name="(tabs)" />
         <Stack.Screen name="onboarding" />
         <Stack.Screen name="auth" />
-        <Stack.Screen name="(tabs)" />
         <Stack.Screen name="journal" />
         <Stack.Screen name="voice" />
         <Stack.Screen name="suggestions" />

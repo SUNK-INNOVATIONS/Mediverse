@@ -1,14 +1,16 @@
 import { useEffect } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import { router } from 'expo-router';
-import Animated, { 
-  useSharedValue, 
-  useAnimatedStyle, 
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
   withTiming,
   withSequence,
-  withDelay
+  withDelay,
 } from 'react-native-reanimated';
 import { Colors, Typography, Spacing } from '@/constants/theme';
+
+const { height } = Dimensions.get('window');
 
 export default function SplashScreen() {
   const logoScale = useSharedValue(0);
@@ -16,17 +18,13 @@ export default function SplashScreen() {
   const textOpacity = useSharedValue(0);
 
   useEffect(() => {
-    // Animate logo entrance
     logoScale.value = withSequence(
       withTiming(1.2, { duration: 800 }),
       withTiming(1, { duration: 200 })
     );
     logoOpacity.value = withTiming(1, { duration: 800 });
-    
-    // Animate text entrance
     textOpacity.value = withDelay(600, withTiming(1, { duration: 600 }));
 
-    // Navigate to onboarding after animation
     const timer = setTimeout(() => {
       router.replace('/onboarding');
     }, 3000);
@@ -50,11 +48,17 @@ export default function SplashScreen() {
           <Text style={styles.logoText}>🧠</Text>
         </View>
       </Animated.View>
-      
+
       <Animated.View style={[styles.textContainer, textAnimatedStyle]}>
         <Text style={styles.title}>Mediverse</Text>
-        <Text style={styles.subtitle}>Mental Health Companion</Text>
+        <Text style={styles.subtitle}>Your Mental Health Companion</Text>
       </Animated.View>
+
+      <View style={styles.madeWithContainer}>
+        <Text style={styles.madeWithText}>
+          Made with <Text style={styles.bolt}>⚡</Text> Bolt
+        </Text>
+      </View>
     </View>
   );
 }
@@ -65,17 +69,23 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingHorizontal: Spacing.lg,
   },
   logoContainer: {
-    marginBottom: Spacing.huge,
+    marginBottom: Spacing.xxl,
   },
   logo: {
-    width: 120,
-    height: 120,
+    width: 130,
+    height: 130,
     backgroundColor: Colors.purple,
-    borderRadius: 60,
+    borderRadius: 65,
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: Colors.purple,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    elevation: 10,
   },
   logoText: {
     fontSize: 60,
@@ -86,10 +96,28 @@ const styles = StyleSheet.create({
   title: {
     ...Typography.title,
     color: Colors.black,
+    fontSize: 32,
+    fontWeight: 'bold',
     marginBottom: Spacing.sm,
   },
   subtitle: {
     ...Typography.secondary,
     color: Colors.gray600,
+    fontSize: 16,
+    textAlign: 'center',
+  },
+  madeWithContainer: {
+    position: 'absolute',
+    bottom: Spacing.xl,
+    alignItems: 'center',
+  },
+  madeWithText: {
+    color: Colors.gray500,
+    fontSize: 13,
+    letterSpacing: 0.5,
+  },
+  bolt: {
+    color: Colors.purple,
+    fontWeight: 'bold',
   },
 });
