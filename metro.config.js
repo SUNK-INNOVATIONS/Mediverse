@@ -1,16 +1,8 @@
-const { getDefaultConfig } = require('metro-config');
+const { getDefaultConfig } = require('expo/metro-config');
 
-module.exports = (async () => {
-  const {
-    resolver: { sourceExts, assetExts }
-  } = await getDefaultConfig();
-  return {
-    transformer: {
-babelTransformerPath: require.resolve('metro-react-native-babel-transformer'),
-    },
-    resolver: {
-      assetExts: assetExts.filter(ext => ext !== 'svg'),
-      sourceExts: [...sourceExts, 'ts', 'tsx', 'cjs']
-    },
-  };
-})();
+const config = getDefaultConfig(__dirname);
+
+// If using `.ts` or `.tsx`, this should already work, but double-check:
+config.resolver.sourceExts = ['ts', 'tsx', ...config.resolver.sourceExts];
+
+module.exports = config;
